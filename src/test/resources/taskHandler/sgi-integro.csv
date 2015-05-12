@@ -1,0 +1,14 @@
+cfg|version|1.5
+cfg|login.cpf|54706424372
+cfg|browser.type|firefox
+cfg|browser.firefox.profile|selenium
+reg|1|Sim|01/04/15 qua||ctx|1;GES|a|07.00|07.30|30|0:30|0,50|3-Qua|13
+reg|2|Não|01/04/15 qua||ctx|2;IMP|b|07.30|08.00|30|0:30|0,50|3-Qua|13
+reg|3|Não|02/04/15 qui||ctx|1;GES|a|08.00|08.30|30|0:30|0,50|4-Qui|13
+reg|4|Não|02/04/15 qui||ctx|2;IMP|b|08.30|09.00|30|0:30|0,50|4-Qui|13
+reg|5|Não|02/04/15 qui||ctx|1;GES|a|09.00|09.30|30|0:30|0,50|4-Qui|13
+reg|6|Não|03/04/15 sex||ctx|2;IMP|b|07.00|07.30|30|0:30|0,50|5-Sex|13
+reg|7|Não|03/04/15 sex||ctx|1;GES|a|07.30|08.00|30|0:30|0,50|5-Sex|13
+reg|8|Não|03/04/15 sex||ctx|2;IMP|b|08.00|08.30|30|0:30|0,50|5-Sex|13
+reg|9|Não|20/08/15 qui||ctx|1;GES|a|07.00|07.30|30|0:30|0,50|4-Qui|33
+reg|10|Não|20/08/15 qui|Sim|ctx|2;IMP|b|07.30|08.00|30|0:30|0,50|4-Qui|33

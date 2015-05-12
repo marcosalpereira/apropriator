@@ -1,0 +1,577 @@
+'0.1 - inicial
+'0.2 - fix: exec script linux
+'0.3 - processar arquivo retorno
+'0.4 - ajustar informacoes no SGI
+'0.5 - usar maior versao do jar
+'0.6 - Limpar somente os dados ja registrados
+'0.7 - Informar se NÃO encontrar arquivo de retorno
+'0.8 - exibir contador ao esperar por arquivo retorno
+'0.9 - capturar projetos
+'1.0 - ler arquivo retorno forcando encode UTF-8
+'1.1 - suportar ALM
+'1.2 - exportar atividades já apropriadas
+'1.3 - Limpar ate a linha selecionada
+'1.4 - Coluna Semana
+'1.5 - Somente ALM
+
+Const VERSION = "1.5"
+
+Const COL_REG = 0
+Const COL_DATE = 1
+Const COL_FINALIZAR = 2
+Const COL_CONTEXTO = 3
+Const COL_WORK_ITEM = 4
+Const COL_COMENTARIO = 5
+Const COL_TIME_INI = 6
+Const COL_TIME_END = 7
+Const COL_MINUTES = 8
+Const COL_HOURS = 9
+Const COL_HOURS_DEC = 10
+Const COL_DAY_OF_WEEK  = 11
+Const COL_WEEK_OF_YEAR  = 12
+
+Const COL_LAST  = 12
+
+Const FIRST_ROW = 1
+Const MAX_ROW = 199
+
+Const OLD_JAR_NAME = "sgi-apropriator-jar-with-dependencies.jar"
+
+sub main
+'   writeCaptureProjectCsvFile "/home/54756424372/Documentos/apropriacao/sgi.csv"
+'   importReturnFile "/home/54706424372/Documentos/apropriacao/sgi.ret"
+end sub
+
+'Exportar os dados para o SGI
+sub export
+  Dim sFilename As String
+  sFilename = getDocDir() & "sgi.csv"  
+  writeTaskCsvFile sFileName
+  execImportApp sFilename  
+end sub
+
+sub setActiveSheet(index as integer) 
+  oDoc = thisComponent
+  oSheets = oDoc.Sheets()
+  oDoc.CurrentController.setActiveSheet(oSheets.getByIndex(index))
+End sub
+
+Sub writeTaskCsvFile(sFilename as String)
+  Dim oDoc As Object ' The current Document
+  Dim iFileNo as Integer
+  Dim sLine As String
+  Dim iRowsCount as Integer
+  Dim oSheet As Object
+  Dim oSheets As Object ' A collection of all sheets
+
+
+  iFileNo = FreeFile
+  open sFilename for output as iFileNo
+  
+  print #iFileNo, "cfg|version|" & VERSION
+
+  'Export config  
+  setActiveSheet(1)
+  For row = 0 to MAX_ROW 
+    if (getText(0, row) = "") Then
+       Exit For
+    End if
+    sLine = "cfg|" & getText(0, row) & "|" & getText(1, row)
+    print #iFileNo, sLine
+  Next row  
+  
+  'Export data
+  setActiveSheet(0)
+  For row = FIRST_ROW to MAX_ROW 
+    if (getText(COL_DATE, row) = "") Then
+       Exit For
+    End if
+
+    sLine = "reg|" & row
+    For col = COL_REG to COL_LAST
+        sLine = sLine & "|" & getText(col, row)
+    Next col
+    print #iFileNo, sLine
+    iRowsCount = iRowsCount + 1
+
+  Next row
+  
+  
+  close #iFileNo
+  
+End Sub
+
+
+'Duplicar a atividade selecionada
+sub duplicate
+    dim str as String
+    dim curPos 
+    curPos = ThisComponent.CurrentSelection.CellAddress
+
+    dim freeRow 
+    freeRow = getAvailableRow(curPos.row)
+    
+    enterString(COL_DATE, freeRow, getCurrentDateStr())
+    for col = COL_DATE + 2 to COL_TIME_INI - 1
+        if (Not isFormula(col, curPos.row)) Then
+           setText(col, freeRow, getText(col, curPos.row))
+        End if
+    Next col    
+    
+    'verificar se finaliza anterior
+    str = getText(COL_TIME_END, freeRow - 1)
+    if str = "" Then
+        enterString(COL_TIME_END, freeRow - 1, getCurrentTimeStr())
+    End if
+    
+    enterString(COL_TIME_INI, freeRow, getCurrentTimeStr())
+    
+    saveMe()
+    
+end sub
+
+sub getSelectedRow() as integer
+    dim row as integer    
+    row = -1 
+    on error resume next
+    row = ThisComponent.CurrentSelection.CellAddress.row
+    getSelectedRow = row
+end sub
+
+sub getSelectedCol() as integer
+    dim col as integer    
+    col = -1 
+    on error resume next
+    col = ThisComponent.CurrentSelection.CellAddress.column
+    getSelectedCol = col
+end sub
+
+
+'Limpar todos os dados registrados
+sub clean
+    Dim linhasDados(MAX_ROW, COL_LAST) as String
+    Dim idxLinhasDados as Integer
+    dim selectedRow as integer
+    dim selectedCol as integer    
+
+    showStatusBar "Limpando atividades apropriadas..."
+    
+    selectedRow = getSelectedRow()
+    selectedCol = getSelectedCol()
+    if (selectedRow > FIRST_ROW And selectedCol = COL_DATE) Then
+        if (msgbox("Limpar atividades já apropriadas até a linha " & selectedRow + 1, 1) = 2) Then
+           exit sub
+        End if
+    Else 
+        selectedRow = -1
+    End if
+   
+    'Salvar as nao apropriadas
+    idxLinhasDados = -1
+    for row = FIRST_ROW to MAX_ROW
+      if (getText(COL_DATE, row) = "") Then
+         exit for
+      End if
+
+      if (getText(COL_REG, row) <> "Sim" or (selectedRow > 0 And row > selectedRow)) Then
+        idxLinhasDados = idxLinhasDados + 1       
+        for col = 0 to COL_LAST
+           If col = COL_DATE Then
+             linhasDados(idxLinhasDados, col) = left$(getText(col, row), 8)
+           Else
+             linhasDados(idxLinhasDados, col) = getText(col, row)
+           End if
+        Next
+      end if
+    Next
+   
+    'Limpar tudo
+    for row = FIRST_ROW to MAX_ROW   
+      if (getText(COL_DATE, row) = "") Then
+         exit for
+      End if
+
+      for col = 0 to COL_LAST
+         if (col = COL_REG) Then
+            setText(col, row, "Não")
+         Elseif (isFormula(col, row)) Then
+            'do nothing
+         Else
+            setText(col, row, "")
+         End if
+      Next col
+    Next row
+   
+    'Restaurar as não apropriadas
+    Dim qtdSalvas as Integer
+    qtdSalvas = idxLinhasDados
+    idxLinhasDados = 0
+    if (qtdSalvas >= 0) Then
+        for row = FIRST_ROW to MAX_ROW         
+          for col = 0 to COL_LAST
+             if (isFormula(col, row)) Then
+                'do nothing
+             Else
+                enterString(col, row, linhasDados(idxLinhasDados, col))
+             End if
+          Next col
+          idxLinhasDados = idxLinhasDados + 1
+          if (idxLinhasDados > qtdSalvas) Then
+              exit for
+          End if
+        Next row
+     end if
+     
+     resetStatusBar
+   
+end sub
+
+Sub isFormula(col as integer, row as integer) as boolean
+    dim oSheet
+    oSheet = ThisComponent.CurrentController.getActiveSheet()
+    isFormula = oSheet.getCellByPosition(col, row).type = 3
+End sub
+
+'Setar a data corrente na linha/coluna.
+sub enterString(col as integer, row as integer, str as String)
+    gotoCell(col,row+1)
+    enterStringCurrentCell(str)
+end sub
+
+sub enterStringCurrentCell(str as String)
+    dim document   as object
+    dim dispatcher as object
+    
+    document   = ThisComponent.CurrentController.Frame
+    dispatcher = createUnoService("com.sun.star.frame.DispatchHelper")
+        
+    dim args2(0) as new com.sun.star.beans.PropertyValue
+    args2(0).Name = "StringName"
+    args2(0).Value = str
+    
+    dispatcher.executeDispatch(document, ".uno:EnterString", "", 0, args2())
+end sub
+
+'Manter compatibilidade com o bind (CTRL+T) da macro
+'TODO Alterar bind para chamar o metodo enterCurrentDateOrTimeCurrentCell
+Sub getCurrentTime()
+    enterCurrentDateOrTimeCurrentCell
+End sub
+
+sub enterCurrentDateOrTimeCurrentCell()
+
+    if (ThisComponent.CurrentSelection.CellAddress.column = COL_DATE) then
+        enterStringCurrentCell getCurrentDateStr() 
+    Else
+        enterStringCurrentCell getCurrentTimeStr()
+    End if
+    
+    'setar tempo inicial
+    if (ThisComponent.CurrentSelection.CellAddress.column = COL_DATE) then      
+        if getText(COL_TIME_INI, ThisComponent.CurrentSelection.CellAddress.row ) = "" Then
+            enterString(COL_TIME_INI, ThisComponent.CurrentSelection.CellAddress.row, getCurrentTimeStr())
+        End if
+        gotoCell COL_COMENTARIO, ThisComponent.CurrentSelection.CellAddress.row + 1
+    End if
+    
+    saveMe()
+    
+end sub
+
+'Salvar a planilha
+sub saveMe() 
+  Dim document As Object
+  Dim dispatcher As Object
+  document = ThisComponent.CurrentController.Frame
+  dispatcher = createUnoService("com.sun.star.frame.DispatchHelper")
+  dispatcher.executeDispatch(document, ".uno:Save", "", 0, Array())
+End sub
+
+'Ir para a linha/coluna informada
+sub gotoCell(col as integer, row as integer)
+    dim document   as object
+    dim dispatcher as object
+
+    document   = ThisComponent.CurrentController.Frame
+    dispatcher = createUnoService("com.sun.star.frame.DispatchHelper")
+
+    dim args(0) as new com.sun.star.beans.PropertyValue
+    args(0).Name = "ToPoint"
+    args(0).Value = "$" & colNumber2Letter(col) & "$" & row
+    dispatcher.executeDispatch(document, ".uno:GoToCell", "", 0, args())
+end sub
+
+'Converter um numero de coluna na letra da coluna.
+sub colNumber2Letter(col as integer) as string
+    colNumber2Letter = chr(col + 65)
+end sub
+
+'Pegar a data corrente.
+sub getCurrentDateStr() as String
+    getCurrentDateStr = format(date, "dd/mm/yyyy")
+end sub
+
+'Pegar a hora corrente
+sub getCurrentTimeStr() as String 
+    getCurrentTimeStr = hour(time) & ":" & minute(time)
+end sub
+
+'Pegar o valor da linha/coluna na forma de string
+sub getText(col as integer, row as integer) as String
+    dim oSheet
+    oSheet = ThisComponent.CurrentController.getActiveSheet()
+    getText = oSheet.getCellByPosition(col,row).string 
+end sub
+
+'Setar texto na linha/coluna
+sub setText(col as integer, row as integer, str as String)
+    dim oSheet
+    oSheet = ThisComponent.CurrentController.getActiveSheet()
+    oSheet.getCellByPosition(col,row).string = str
+end sub
+
+'Pegar a proxima linha disponivel (vazia)
+sub getAvailableRow(startRow as integer) as Integer
+    dim i as integer
+    for i = startRow to 32767
+        if getText(1, i) = "" Then
+           getAvailableRow = i
+           exit sub
+        end if
+    next
+    getAvailableRow = -1 
+end sub
+
+'Pegar a pasta onde esta este documento
+Sub getDocDir() As String
+  Dim sURL As String ' Existing URL of file
+  sURL = ConvertFromURL(ThisComponent.getLocation())
+  getDocDir = Mid(sURL,1,Len(sURL)-Len(Dir(sURL)))
+End Sub
+
+Sub waitForReturnFile(inputFileName as String)
+   For i=1 to 100      
+      If FileExists(inputFileName) Then 
+        resetStatusBar
+        Exit sub
+      End if      
+      showStatusBar "Esperando arquivo retorno (" & (100 - i) & ")"
+      Wait 2000
+   Next
+   resetStatusBar
+End Sub
+
+'Executar a aplicacao java que interage com o SGI
+Sub execImportApp(exportedFile as String) 
+    Dim inputFileName as String  
+    Dim script as String
+    if (isLinux()) Then 
+       script = "apropriacao.sh"
+    Else 
+       script = "apropriacao.bat"   
+    End If
+    
+    Dim sCurrDir As String
+    sCurrDir = getDocDir()
+    inputFileName = sCurrDir & "sgi.ret"
+    If FileExists(inputFileName) Then 
+        kill inputFileName
+    End if
+
+    script = sCurrDir & script
+    
+    If Not FileExists(script) Then 
+        MsgBox script + ". Não encontrado!!"
+        Exit sub
+    End if
+    
+    Dim sys As Object
+    Dim jarFile  as String
+    jarFile = getJarFile(sCurrDir)
+    
+    Dim params as String
+    if isLinux() Then
+        params = jarFile & " " & exportedFile
+    Else
+        params = aspas(jarFile) & " " & aspas(exportedFile)
+    End if 
+
+    sys = CreateUnoService("com.sun.star.system.SystemShellExecute")
+    sys.execute(script, params, 0)
+
+    waitForReturnFile inputFileName
+    importReturnFile inputFileName
+    
+End Sub
+
+Sub getJarFile(sCurrDir as String) as String
+  Dim latestJar as String
+  Dim jar as String
+  latestJar = ""
+  jar = Dir(sCurrDir & "alm-apropriator*.jar", 0)  
+  While jar <> ""
+    'Filtro da funcao dir no libreoffice 4 nao esta funcionando
+    if (left$(jar, 16) = "alm-apropriator-" and right$(jar, 4) = ".jar") Then
+      if (jar > latestJar) Then
+         latestJar = jar
+      End if
+    End If
+    jar = Dir
+  Wend
+  if (latestJar = "") Then
+     msgbox "Não consegui encontrar algum alm-apropriator*.jar"
+  End if
+  getJarFile = sCurrDir & latestJar
+End Sub
+
+'Importar arquivo de retorno.
+Sub importReturnFile(inputFileName as String)
+
+  if (Not arquivoRetornoPresente(inputFileName)) Then 
+     Exit sub
+  End if
+
+  Dim inputFileNameUrl As String
+  Dim sf As Object  
+  Dim sLine As String
+  Dim aLine
+  
+  inputFileNameUrl = convertToURL(inputFileName) 
+  
+  sf = createUnoService("com.sun.star.ucb.SimpleFileAccess")
+    
+  fileStream = sf.openFileRead(inputFileNameUrl) 
+  textFile = createUnoService("com.sun.star.io.TextInputStream") 
+  textFile.InputStream = fileStream 
+  textFile.Encoding = "UTF-8" 
+
+  Do while not textFile.IsEOF 
+    sLine = textFile.readLine
+    if (sLine <> "") Then
+        aLine = split(sLine, "|")
+        if (aLine(0) = "mcr" ) Then 
+            marcarComoRegistrado CInt(aLine(1))
+        ElseIf (aLine(0) = "alv") Then
+            atualizarListaValidacao CInt(aLine(1)), aLine(2)
+        ElseIf (aLine(0) = "set") Then
+            setText CInt(aLine(1)), CInt(aLine(2)), aLine(3)
+        ElseIf (aLine(0) = "prj") Then
+            atualizarProjetos aLine(1)
+        End if
+     End if
+  Loop
+  
+  fileStream.closeInput 
+  textFile.closeInput
+    
+  saveMe()
+  
+End Sub
+
+'Atualizar os projetos da lista de validacao
+Sub atualizarProjetos(projetos as String)
+    dim pos as integer
+    Dim range as String
+    
+    oDoc = ThisComponent
+    oSheet = oDoc.getSheets.getByIndex(0)
+    range = getRangeParaColuna(COL_CONTEXTO)
+    Set CellRange = oSheet.getCellRangeByName(range)
+    Set newValidation = CellRange.Validation
+    newValidation.Type = com.sun.star.sheet.ValidationType.LIST
+    newValidation.Formula1 = projetos
+    newValidation.setOperator com.sun.star.Sheet.ConditionOperator.EQUAL
+    CellRange.Validation = newValidation
+
+End sub
+
+'Recuperar os projetos atuais
+Sub getListaProjetos() As String
+    Dim formulaAnterior as string
+    dim pos as integer
+    Dim range as String
+    
+    oDoc = ThisComponent
+    oSheet = oDoc.getSheets.getByIndex(0)
+    range = getRangeParaColuna(COL_CONTEXTO)
+    Set CellRange = oSheet.getCellRangeByName(range)
+    Dim projetos As String 
+    projetos = CellRange.Validation.Formula1
+    getListaProjetos = projetos
+
+End sub
+
+sub arquivoRetornoPresente(inputFileName as String) as boolean
+  while true 
+    If (FileExists(inputFileName)) Then
+        arquivoRetornoPresente = true
+        exit sub
+    Else 
+      if (MsgBox("Arquivo de retorno não foi encontrado! Tenta novamente?", MB_YESNO) <> IDYES) Then
+         arquivoRetornoPresente = false
+         exit sub
+     end if
+    end if 
+  wend
+     
+End sub      
+
+'Marcar a linha informada como registrada
+Sub marcarComoRegistrado(numeroLinha as integer) 
+    setText(COL_REG, numeroLinha, "Sim")
+End Sub
+
+'Incluir uma nova opcao no combo da coluna informada
+Sub atualizarListaValidacao(coluna as integer, novaOpcao as String)
+    Dim formulaAnterior as string
+    dim pos as integer
+    Dim range as String
+    
+    oDoc = ThisComponent
+    oSheet = oDoc.getSheets.getByIndex(0)
+    range = getRangeParaColuna(coluna)
+    Set CellRange = oSheet.getCellRangeByName(range)
+    Set newValidation = CellRange.Validation
+    formulaAnterior = CellRange.Validation.Formula1
+    pos = instr(formulaAnterior, novaOpcao)
+    if (pos = 0) Then
+      newValidation.Type = com.sun.star.sheet.ValidationType.LIST
+      newValidation.Formula1 = formulaAnterior & ";" & aspas(novaOpcao)
+      newValidation.setOperator com.sun.star.Sheet.ConditionOperator.EQUAL
+      CellRange.Validation = newValidation
+    End if
+
+End sub
+
+'Montar a faixa de celulas usadas na planilha para a coluna informada
+Sub getRangeParaColuna(coluna as integer) as String
+    Dim colStr as String
+    colStr = colNumber2Letter(coluna)
+    getRangeParaColuna =  colStr & (FIRST_ROW + 1) & ":" & colStr & (MAX_ROW + 1)
+End Sub
+
+'Envolver a string com aspas
+Sub aspas(str As String) As String  
+  aspas = """" & str & """"
+End Sub
+
+'Verificar se esta no linux
+Sub isLinux() As Boolean
+'iGUIWindows = 1
+'iGUIMacOS = 3
+'iGUIUnix = 4
+
+  isLinux = getGuiType() = 4  
+End Sub
+
+sub showStatusBar(texto as String) 
+    if Not isNull(ThisComponent.CurrentController) Then
+        ThisComponent.CurrentController.StatusIndicator.Start(texto, 0)
+    End if
+End sub
+
+sub resetStatusBar() 
+   if Not isNull(ThisComponent.CurrentController) Then
+     ThisComponent.CurrentController.StatusIndicator.Reset
+   End if
+End Sub
