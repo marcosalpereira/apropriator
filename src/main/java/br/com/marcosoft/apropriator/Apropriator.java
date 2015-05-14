@@ -2,21 +2,19 @@ package br.com.marcosoft.apropriator;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
-import javax.swing.text.JTextComponent;
 
 import br.com.marcosoft.apropriator.model.ApropriationFile;
 import br.com.marcosoft.apropriator.model.ApropriationFile.Config;
@@ -32,50 +30,61 @@ import br.com.marcosoft.apropriator.po.VisaoGeralPage;
 import br.com.marcosoft.apropriator.selenium.SeleniumSupport;
 import br.com.marcosoft.apropriator.util.ApplicationProperties;
 import br.com.marcosoft.apropriator.util.Cipher;
+import br.com.marcosoft.apropriator.util.SoftwareUpdate;
 import br.com.marcosoft.apropriator.util.Util;
 import br.com.marcosoft.apropriator.util.Version;
-import br.com.marcosoft.apropriator.util.WebUtils;
 
 /**
  * Apropriar SGI.
  */
 public class Apropriator {
-
-    private static final String APROPRIATOR_RELEASES_LATEST = "https://github.com/marcosalpereira/apropriator/releases/latest";
+	
+	private final Version appVersion;
 
     private static final String CHAVE_SENHA_ALM_APP_PROPERTIES = "alm.password";
 
     public static void main(final String[] args) {
-        setLookAndFeel();
-        final File inputFile = parseArgs(args);
-        if (inputFile == null) {
-            JOptionPane.showMessageDialog(null, "Erro acessando arquivo importação!");
-        } else {
-            final Apropriator apropriator = new Apropriator();
-            try {
-                apropriator.doItForMePlease(inputFile);
-            } catch (final Throwable e) {
-                JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!\n" + e.getClass().getName() + ":" + e.getMessage());
-                apropriator.gravarArquivoRetornoErro(e, inputFile);
-                e.printStackTrace();
-            }
+    	final Apropriator apropriator = new Apropriator();
+    	Arguments arguments = Arguments.parse(args);
+    	try {
+	    	loadAppVersion();
+	    	setLookAndFeel();
+	        apropriator.checkSoftwareUpdate(arguments.isUpdate());	        
+	        apropriator.doItForMePlease(arguments.getCsvFile());
+        } catch (final Throwable e) {
+            JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!\n" + e.getClass().getName() + ":" + e.getMessage());
+            apropriator.gravarArquivoRetornoErro(e, arguments.getCsvFile());
+            e.printStackTrace();
         }
     }
 
-    private static void setLookAndFeel() {
+	private void checkSoftwareUpdate(boolean update) {
+		if (update) {
+			try {
+				SoftwareUpdate.update(appVersion);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+			System.exit(0);
+		}
+	}
+    
+    private Apropriator() {
+    	appVersion = new Version(Util.getAppVersion());
+	}
+
+    private static void loadAppVersion() {
+		
+	}
+    
+
+	private static void setLookAndFeel() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (final Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private static File parseArgs(final String[] args) {
-        if (args.length > 0) {
-            final File ret = new File(args[0]);
-            if (ret.exists()) return ret;
-        }
-        return null;
     }
 
     private ApropriationFile apropriationFile;
@@ -86,48 +95,9 @@ public class Apropriator {
     private boolean lerSenhaSalva = true;
 
     public void doItForMePlease(final File inputFile) throws ApropriationException {
-        checkForNewVersion();
         parseFile(inputFile);
         verificarCompatibilidade();
         apropriate();
-    }
-
-    private void checkForNewVersion() {
-        final String appVersion = getAppVersion();
-        if (appVersion == null) {
-            return;
-        }
-
-        final String latestVersion =
-            getLatestVersion();
-        if (latestVersion == null) {
-            return;
-        }
-
-        final boolean newVersion = new Version(latestVersion).compareTo(new Version(appVersion)) == 1;
-        if (newVersion) {
-            final String message =
-                "A versão " + latestVersion + " está disponível em:\n" + APROPRIATOR_RELEASES_LATEST;
-            final JTextComponent txtMessage = new JTextArea(message);
-            txtMessage.setEditable(false);
-            JOptionPane.showMessageDialog(null, txtMessage);
-        }
-    }
-
-    private String getLatestVersion() {
-        final String latestVersionPage =
-            WebUtils.downloadFile(APROPRIATOR_RELEASES_LATEST);
-        if (latestVersionPage == null) {
-            return null;
-        }
-        final String searchStr = "/marcosalpereira/apropriator/releases/download/";
-        final int ini = latestVersionPage.indexOf(searchStr) + searchStr.length();
-        final int fim = latestVersionPage.indexOf('/', ini);
-        if (fim <= ini) {
-            return null;
-        }
-        return latestVersionPage.substring(ini + 1, fim);
-
     }
 
     private void parseFile(final File inputFile) throws ApropriationException {
@@ -218,15 +188,7 @@ public class Apropriator {
         gravarArquivoRetornoApropriacao(tasksWeeklySummary);
     }
 
-    private void verificarFinalizarTarefas() {
-        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
-        final Collection<TaskSummary> summary = tasksHandler.getResumoTarefasFinalizadas();
-        final Alm alm = new Alm();
-        for (final TaskSummary taskSummary : summary) {
-            final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(taskSummary);
-            visaoGeralPage.incluirComentarioFinalizacaoTarefa(taskSummary);
-        }
-    }
+
 
     private boolean registrosApropriacoesIntegros() {
         final Config config = this.apropriationFile.getConfig();
@@ -345,10 +307,8 @@ public class Apropriator {
             }
         }
 
-        progressInfo.setInfoMessage("Verificando se existe sinalização de tarefa finalizada");
-
-        verificarFinalizarTarefas();
-
+        verificarFinalizarTarefas(progressInfo);
+        
         progressInfo.dispose();
 
         SeleniumSupport.stopSelenium();
@@ -356,7 +316,7 @@ public class Apropriator {
     }
 
     private String montarTitulo() {
-        return "Apropriator v" + getAppVersion() + " - Macros" + getMacrosVersion();
+        return "Apropriator v" + appVersion.get() + " - Macros" + getMacrosVersion();
     }
 
     private boolean apropriateAlm(TaskWeeklySummary summary, ProgressInfo progressInfo) {
@@ -381,6 +341,39 @@ public class Apropriator {
             }
         }
     }
+    
+    private void verificarFinalizarTarefas(ProgressInfo progressInfo) {
+        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
+        final Collection<TaskSummary> summaryFinishedTasks = tasksHandler.getResumoTarefasFinalizadas();
+        for (final TaskSummary summary : summaryFinishedTasks) {
+        	progressInfo.setInfoFinalizando(summary);
+        	if (!finalizarTarefa(summary)) {
+        		break;
+        	}
+        }
+    }
+
+	private boolean finalizarTarefa(final TaskSummary summary) {
+		final Alm alm = new Alm();
+		try {
+			final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(summary);
+			visaoGeralPage.incluirComentarioFinalizacaoTarefa(summary);
+			return true;
+			
+        } catch (final RuntimeException e) {
+            final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
+            if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
+                return finalizarTarefa(summary);
+
+            } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
+                return true;
+
+            } else {
+                return false;
+
+            }
+        }
+	}    
 
     private RastreamentoHorasPage gotoApropriationPage(TaskWeeklySummary summary) {
         final Alm alm = new Alm();
@@ -468,21 +461,6 @@ public class Apropriator {
             return Cipher.uncript(pwdCripto);
         }
         return null;
-    }
-
-    private String getAppVersion() {
-        final String ret = "?";
-        final InputStream stream = this.getClass().getClassLoader().getResourceAsStream(
-            "META-INF/MANIFEST.MF");
-        if (stream != null) {
-            final Properties prop = new Properties();
-            try {
-                prop.load(stream);
-                return prop.getProperty("version");
-            } catch (final IOException e) {
-            }
-        }
-        return ret;
     }
 
 }

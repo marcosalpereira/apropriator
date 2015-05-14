@@ -100,22 +100,23 @@ public class TasksHandler extends BaseModel {
     }
 
     public Collection<TaskSummary> getResumoTarefasFinalizadas() {
-        final Set<Task> set = new LinkedHashSet<Task>();
+        final Set<Task> taskFinalizadas = new LinkedHashSet<Task>();
         for (final TaskRecord taskRecord : taskRecords) {
             if (taskRecord.isFinalizar() && !taskRecord.isRegistrado()) {
-                set.add(taskRecord.getTask());
+                taskFinalizadas.add(taskRecord.getTask());
             }
         }
 
         final Map<Task, TaskSummary> map = new HashMap<Task, TaskSummary>();
 
-        for (final TaskRecord taskRecord : taskRecords) {
-            final Task task = taskRecord.getTask();
-            if (set.contains(task)) {
-                TaskSummary summary = map.get(task);
+        for (Task taskFinalizada : taskFinalizadas) 
+        	for (final TaskRecord taskRecord : taskRecords) {
+        		if (taskFinalizada.getContexto().equals(taskRecord.getTask().getContexto())
+        				&& taskFinalizada.getComentario().equals(taskRecord.getTask().getComentario())) {            
+                TaskSummary summary = map.get(taskFinalizada);
                 if (summary == null) {
-                    summary = new TaskSummary(task);
-                    map.put(task, summary);
+                    summary = new TaskSummary(taskFinalizada);
+                    map.put(taskFinalizada, summary);
                 }
                 summary.add(taskRecord.getDuracao());
             }

@@ -1,6 +1,7 @@
 package br.com.marcosoft.apropriator.po;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -91,13 +92,19 @@ public class PageObject {
         return url;
     }
 
-    protected String montarUrlVisaoGeralAlm(String projetoAlm, int idItemTrabalho) {
+    protected String montarUrlVisaoGeralAlm(String tarefa, int idItemTrabalho) {
         final String url = String.format(
             "https://alm.serpro/ccm/web/projects/%s" +
                 "#action=com.ibm.team.workitem.viewWorkItem&id=%s"
-                , WebUtils.encode(projetoAlm)
+                , WebUtils.encode(tarefa)
                 , idItemTrabalho);
         return url;
     }
+    
+	protected void executeScript(String js) {
+		JavascriptExecutor jsExec = (JavascriptExecutor) getWebDriver();
+        jsExec.executeScript(js);
+	}
+    
 
 }

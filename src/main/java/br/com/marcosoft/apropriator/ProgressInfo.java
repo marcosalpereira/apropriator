@@ -28,6 +28,8 @@ import javax.swing.table.TableModel;
 
 import br.com.marcosoft.apropriator.model.DaySummary;
 import br.com.marcosoft.apropriator.model.ItemTrabalho;
+import br.com.marcosoft.apropriator.model.Task;
+import br.com.marcosoft.apropriator.model.TaskSummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
 import br.com.marcosoft.apropriator.util.AWTUtilitiesWrapper;
 import br.com.marcosoft.apropriator.util.MoveMouseListener;
@@ -56,8 +58,8 @@ public class ProgressInfo extends JFrame {
      */
     private static final long serialVersionUID = -6989750848125302233L;
 
-    private javax.swing.JLabel lblDuracao;
-    private javax.swing.JLabel lblMacro;
+    private javax.swing.JLabel lblLinhaTempo;
+    private javax.swing.JLabel lblItemTrabalho;
     private javax.swing.JLabel lblPeriodo;
     private javax.swing.JLabel lblContexto;
     private javax.swing.JLabel lblTitle;
@@ -156,10 +158,10 @@ public class ProgressInfo extends JFrame {
             }
 
             {
-                lblMacro = new javax.swing.JLabel();
-                jp.add(lblMacro, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 0), 0, 0));
-                lblMacro.setForeground(new java.awt.Color(254, 254, 254));
-                lblMacro.setText("Item Trabalho");
+                lblItemTrabalho = new javax.swing.JLabel();
+                jp.add(lblItemTrabalho, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 0), 0, 0));
+                lblItemTrabalho.setForeground(new java.awt.Color(254, 254, 254));
+                lblItemTrabalho.setText("Item Trabalho");
             }
             {
                 txtItemTrabalho = new javax.swing.JLabel();
@@ -189,10 +191,10 @@ public class ProgressInfo extends JFrame {
             }
 
             {
-                lblDuracao = new javax.swing.JLabel();
-                jp.add(lblDuracao, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 0), 0, 0));
-                lblDuracao.setForeground(new java.awt.Color(254, 254, 254));
-                lblDuracao.setText("Linha Tempo");
+                lblLinhaTempo = new javax.swing.JLabel();
+                jp.add(lblLinhaTempo, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 0), 0, 0));
+                lblLinhaTempo.setForeground(new java.awt.Color(254, 254, 254));
+                lblLinhaTempo.setText("Linha Tempo");
             }
             {
             	final TableModel tblLinhaTempoModel =
@@ -276,7 +278,6 @@ public class ProgressInfo extends JFrame {
             lblMessage.setVisible(false);
         } else {
             lblMessage.setText(infoMessage);
-            lblMessage.setVisible(true);
         }
         txtPeriodo.setText(
             Util.DD_MM_YYYY_FORMAT.format(summary.getDataInicio())
@@ -287,6 +288,19 @@ public class ProgressInfo extends JFrame {
         txtItemTrabalho.setText(summary.getItemTrabalho().toString());
         setTempo(TipoTempo.APROPRIANDO.ordinal() + 1, summary);
     }
+    
+    public void setInfoFinalizando(TaskSummary summary) {
+  		setInfoMessage("Finalizando Tarefa");
+  		tblLinhaTempo.setVisible(false);
+  		lblLinhaTempo.setVisible(false);
+  		
+  		txtPeriodo.setVisible(false);
+  		lblPeriodo.setVisible(false);
+  		
+    	txtContexto.setText(summary.getTask().getContexto());
+    	txtItemTrabalho.setText(summary.getComentario());
+    }
+    
     public void setTempo(TipoTempo tipoTempo, TaskWeeklySummary summary) {
         setTempo(tipoTempo.ordinal() + 1, summary);
     }
@@ -313,13 +327,15 @@ public class ProgressInfo extends JFrame {
             }
         }
         final ProgressInfo progressInfo = new ProgressInfo("casa");
-        progressInfo.setTempo(TipoTempo.ANTES, tds);
-        progressInfo.setResumoApropriando(tds);
-        progressInfo.setTempo(TipoTempo.DEPOIS, tds.somar(tds));
+//        progressInfo.setTempo(TipoTempo.ANTES, tds);
+//        progressInfo.setResumoApropriando(tds);
+//        progressInfo.setTempo(TipoTempo.DEPOIS, tds.somar(tds));
+        progressInfo.setInfoFinalizando(new TaskSummary(new Task("ctx", new ItemTrabalho(1, "foo"), "task")));
     }
 
     public void setInfoMessage(String message) {
-        this.infoMessage = message;
+    	lblMessage.setText(message);
+        lblMessage.setVisible(message != null);        
     }
 
 }
