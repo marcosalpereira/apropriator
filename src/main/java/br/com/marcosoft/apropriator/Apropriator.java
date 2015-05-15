@@ -59,15 +59,7 @@ public class Apropriator {
     }
 
 	private void checkSoftwareUpdate(boolean update, String targetFolder) {
-		if (update) {
-			try {
-				SoftwareUpdate.update(appVersion, targetFolder);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-			System.exit(0);
-		}
+		SoftwareUpdate.update(appVersion, targetFolder);
 	}
     
     private Apropriator() {

@@ -10,7 +10,6 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,8 +36,14 @@ public class SoftwareUpdate extends JFrame implements Progress {
 
     private JProgressBar progressBar;
 
+	private Version currentVersion;
 
-    public SoftwareUpdate() {
+	private String targetFolder;
+
+
+    public SoftwareUpdate(Version currentVersion, String targetFolder) {
+    	this.currentVersion = currentVersion;
+    	this.targetFolder = targetFolder;
         initComponents();
     }
 
@@ -112,9 +117,18 @@ public class SoftwareUpdate extends JFrame implements Progress {
     	update(new Version("1.0"), "/tmp/a");
     }
 	
-	public static void update(Version currentVersion, String targetFolder) throws IOException {
-		SoftwareUpdate update = new SoftwareUpdate();
-		update.progressString("Apropriator v%s - Verificando se existe versão nova", currentVersion);
+	public static void update(Version currentVersion, String targetFolder)  {
+		SoftwareUpdate update = new SoftwareUpdate(currentVersion, targetFolder);
+		try {
+			update.doIt();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		update.dispose();
+	}
+	
+	private void doIt() throws IOException {
+		progressString("Apropriator v%s - Verificando se existe versão nova", currentVersion);
 		
 		Version latestVersion = checkForNewVersion(currentVersion);
 	
@@ -123,19 +137,19 @@ public class SoftwareUpdate extends JFrame implements Progress {
 					"https://github.com/marcosalpereira/apropriator/releases/download/v%s/binario.zip", 
 					latestVersion);
 			
-			update.progressString("Apropriator v%s - Atualizando para v%s ...", currentVersion, latestVersion);
+			progressString("Apropriator v%s - Atualizando para v%s ...", currentVersion, latestVersion);
 			
 	    	String zipFile = targetFolder + File.separator +  "binario.zip";
 			OutputStream out = new FileOutputStream(zipFile);			
-	    	WebUtils.downloadFile(url, out, update);
+	    	WebUtils.downloadFile(url, out, this);
 	    	
-	    	update.unZipIt(zipFile, targetFolder);
+	    	unZipIt(zipFile, targetFolder);
 	    	
-	    	update.progressBar.setForeground(Color.red);
-	    	update.progressString("Versão Atualizada. Será usada somente na próxima execução");
+	    	progressBar.setForeground(Color.red);
+	    	progressString("Versão Atualizada. Será usada somente na próxima execução");
 	    	Util.sleep(3000);
 		}
-		update.dispose();
+		
 	}
 	
 	private void progressString(String template, Object... objects) {
