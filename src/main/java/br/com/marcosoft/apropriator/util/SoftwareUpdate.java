@@ -3,26 +3,25 @@ package br.com.marcosoft.apropriator.util;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.border.SoftBevelBorder;
-import javax.swing.text.JTextComponent;
 
 import br.com.marcosoft.apropriator.util.WebUtils.Progress;
 
@@ -34,21 +33,16 @@ public class SoftwareUpdate extends JFrame implements Progress {
 
     private static final long serialVersionUID = -6989750848125302233L;
 
-    private JLabel lblTitle;
-    private JLabel lblMessage;
-    
-    private JPanel jPanel1;
     private JPanel jp;
 
-    private JLabel labelProgress;
     private JProgressBar progressBar;
 
 
-    public SoftwareUpdate(String title, String message) {
-        initComponents(title, message);
+    public SoftwareUpdate() {
+        initComponents();
     }
 
-    private void initComponents(String title, String message) {
+	private void initComponents() {
 
         final GridBagLayout thisLayout1 = new GridBagLayout();
         thisLayout1.columnWidths = new int[] {7};
@@ -65,64 +59,24 @@ public class SoftwareUpdate extends JFrame implements Progress {
             jp.setBackground(blueBackGround);
 
             final GridBagLayout thisLayout = new GridBagLayout();
-            thisLayout.columnWeights = new double[] {0.0, 0.7};
-            thisLayout.rowWeights = new double[] {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2};
-            thisLayout.rowHeights = new int[] {7, 7, 7, 7, 7, 7, 7};
+            thisLayout.columnWeights = new double[] {0.1};
+            thisLayout.rowWeights = new double[] {0.1};
+            thisLayout.rowHeights = new int[] {7};
             thisLayout.columnWidths = new int[] {109};
             jp.setLayout(thisLayout);
 
-
             getContentPane().add(jp, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-            {
-            	jPanel1 = new JPanel();
-            	final GridBagLayout jPanel1Layout = new GridBagLayout();
-            	jp.add(jPanel1, new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(5, 10, 15, 10), 0, 0));
-            	jPanel1Layout.rowWeights = new double[] {0.1, 0.1};
-            	jPanel1Layout.rowHeights = new int[] {7, 7};
-            	jPanel1Layout.columnWeights = new double[] {0.1};
-            	jPanel1Layout.columnWidths = new int[] {7};
-            	jPanel1.setLayout(jPanel1Layout);
-            	jPanel1.setBackground(new java.awt.Color(58,71,106));
-            	{
-            		lblTitle = new javax.swing.JLabel();
-            		jPanel1.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-            		lblTitle.setBackground(new java.awt.Color(249, 249, 249));
-            		lblTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            		lblTitle.setText(title);
-            		lblTitle.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-            		lblTitle.setOpaque(true);
-            		lblTitle.setSize(679, 22);
-            		lblTitle.setPreferredSize(new java.awt.Dimension(0, 22));
-            	}
-            	{
-            		lblMessage = new JLabel();
-            		jPanel1.add(lblMessage, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 0, 0, 0), 0, 0));
-            		lblMessage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            		lblMessage.setOpaque(true);
-            		lblMessage.setBackground(new java.awt.Color(249,249,249));
-            		lblMessage.setPreferredSize(new java.awt.Dimension(0,22));
-            		lblMessage.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-            		lblMessage.setSize(679, 22);
-            		lblMessage.setVisible(true);
-            		lblMessage.setFont(new java.awt.Font("Dialog",1,12));
-            		lblMessage.setText(message);
-            	}
-            }
 
-            {
-                labelProgress = new javax.swing.JLabel();
-                jp.add(labelProgress, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 0), 0, 0));
-                labelProgress.setForeground(new java.awt.Color(254, 254, 254));
-                labelProgress.setText("Progresso");
-            }
             {
                 progressBar = new JProgressBar(0, 100);
-                jp.add(progressBar, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 0, 3, 10), 0, 0));
+                jp.add(progressBar, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
                 progressBar.setBackground(java.awt.SystemColor.text);
-                progressBar.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
                 progressBar.setOpaque(true);
                 progressBar.setSize(395, 20);
                 progressBar.setPreferredSize(new java.awt.Dimension(0, 20));
+                progressBar.setStringPainted(true);
+                progressBar.setFont(new java.awt.Font("Dialog",Font.BOLD,16));
+                
             }
 
             jp.setOpaque(true);
@@ -135,7 +89,7 @@ public class SoftwareUpdate extends JFrame implements Progress {
 
         this.setUndecorated(true);
         this.pack();
-        this.setSize(751, 100);
+        this.setSize(751, 30);
         this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         setScreenPosition();
@@ -154,23 +108,70 @@ public class SoftwareUpdate extends JFrame implements Progress {
         this.setLocation(screenWidth - this.getWidth(), screenHeight - this.getHeight());
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
-    	update(new Version("1.0"));
+    public static void main(String[] args) throws IOException {
+    	update(new Version("1.0"), "/tmp/a");
     }
 	
-	public static void update(Version currentVersion) throws FileNotFoundException {
+	public static void update(Version currentVersion, String targetFolder) throws IOException {
+		SoftwareUpdate update = new SoftwareUpdate();
+		update.progressString("Apropriator v%s - Verificando se existe versão nova", currentVersion);
+		
 		Version latestVersion = checkForNewVersion(currentVersion);
-	
 	
 		if (latestVersion != null) {
 			String url = String.format(
 					"https://github.com/marcosalpereira/apropriator/releases/download/v%s/binario.zip", 
-					latestVersion.get());
-			SoftwareUpdate update = new SoftwareUpdate("Software Update", url);
-	    	OutputStream out = new FileOutputStream("/tmp/binario.zip");
+					latestVersion);
+			
+			update.progressString("Apropriator v%s - Atualizando para v%s ...", currentVersion, latestVersion);
+			
+	    	String zipFile = targetFolder + File.separator +  "binario.zip";
+			OutputStream out = new FileOutputStream(zipFile);			
 	    	WebUtils.downloadFile(url, out, update);
-	    	update.dispose();
+	    	
+	    	update.unZipIt(zipFile, targetFolder);
+	    	
+	    	update.progressBar.setForeground(Color.red);
+	    	update.progressString("Versão Atualizada. Será usada somente na próxima execução");
+	    	Util.sleep(3000);
 		}
+		update.dispose();
+	}
+	
+	private void progressString(String template, Object... objects) {
+		progressBar.setString(String.format(template, objects));
+	}
+
+	private void unZipIt(String zipFile, String outputFolder) throws IOException {
+
+		byte[] buffer = new byte[1024];
+
+		
+			ZipInputStream zis = new ZipInputStream(
+					new FileInputStream(zipFile));
+
+			ZipEntry ze = zis.getNextEntry();
+
+			while (ze != null) {
+
+				String fileName = ze.getName();
+				File newFile = new File(outputFolder + File.separator + fileName);
+
+				progressString("Descompactando %s", newFile.getAbsoluteFile());
+
+				FileOutputStream fos = new FileOutputStream(newFile);
+
+				int len;
+				while ((len = zis.read(buffer)) > 0) {
+					fos.write(buffer, 0, len);
+				}
+
+				fos.close();
+				ze = zis.getNextEntry();
+			}
+
+			zis.closeEntry();
+			zis.close();
 	}
 	
     private static Version checkForNewVersion(Version currentVersion) {

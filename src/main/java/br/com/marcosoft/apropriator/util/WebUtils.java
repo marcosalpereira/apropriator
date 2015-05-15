@@ -39,7 +39,7 @@ public class WebUtils {
         final String search = "/marcosalpereira/apropriator/releases/download/";
         final int ini = string.indexOf(search) + search.length();
         final int fim = string.indexOf('/', ini);
-        System.out.println(string.substring(ini + 1, fim));
+        System.out.println(string.substring(ini + 1, fim)); 
 //        System.out.println(encode("SUPDE-Atividade Não Software"));
     }
     

@@ -125,19 +125,5 @@ public class Util {
 		return DIAS_SEMANA[diaSemana];
 	}
 
-    public static String getAppVersion() {
-        final String ret = "?";
-		final InputStream stream = Thread.currentThread().getClass()
-				.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
-        if (stream != null) {
-            final Properties prop = new Properties();
-            try {
-                prop.load(stream);
-                return prop.getProperty("version");
-            } catch (final IOException e) {
-            }
-        }
-        return ret;
-    }
 	
 }

@@ -53,17 +53,20 @@ public class AWTUtilitiesWrapper {
         init();
     }
 
-    public static void setOpacity(Window window) {
-        final boolean isOpacityControlSupported = AWTUtilitiesWrapper.isTranslucencySupported(AWTUtilitiesWrapper.TRANSLUCENT);
-        if (isOpacityControlSupported) {
-            AWTUtilitiesWrapper.setWindowOpacity(window, 0.85f);
-        }
+    public static void setOpacity(Window window, float opacity) {
+    	final boolean isOpacityControlSupported = AWTUtilitiesWrapper.isTranslucencySupported(AWTUtilitiesWrapper.TRANSLUCENT);
+    	if (isOpacityControlSupported) {
+    		AWTUtilitiesWrapper.setWindowOpacity(window, opacity);
+    	}
 //        boolean isShapingSupported = AWTUtilitiesWrapper.isTranslucencySupported(AWTUtilitiesWrapper.PERPIXEL_TRANSPARENT);
 //        if (isShapingSupported) {
 //            Shape shape = new RoundRectangle2D.Float(0, 0, this.getWidth(), this.getHeight(), 30, 30);
 //            AWTUtilitiesWrapper.setWindowShape(this, shape);
 //        }
-
+    	
+    }
+    public static void setOpacity(Window window) {
+    	setOpacity(window, 0.85f);
     }
 
 

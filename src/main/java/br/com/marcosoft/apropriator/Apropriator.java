@@ -2,14 +2,15 @@ package br.com.marcosoft.apropriator;
 
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -47,9 +48,8 @@ public class Apropriator {
     	final Apropriator apropriator = new Apropriator();
     	Arguments arguments = Arguments.parse(args);
     	try {
-	    	loadAppVersion();
 	    	setLookAndFeel();
-	        apropriator.checkSoftwareUpdate(arguments.isUpdate());	        
+	        apropriator.checkSoftwareUpdate(arguments.isUpdate(), arguments.getCsvFile().getParent());	        
 	        apropriator.doItForMePlease(arguments.getCsvFile());
         } catch (final Throwable e) {
             JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!\n" + e.getClass().getName() + ":" + e.getMessage());
@@ -58,11 +58,11 @@ public class Apropriator {
         }
     }
 
-	private void checkSoftwareUpdate(boolean update) {
+	private void checkSoftwareUpdate(boolean update, String targetFolder) {
 		if (update) {
 			try {
-				SoftwareUpdate.update(appVersion);
-			} catch (FileNotFoundException e) {
+				SoftwareUpdate.update(appVersion, targetFolder);
+			} catch (IOException e) {
 				e.printStackTrace();
 				System.exit(1);
 			}
@@ -71,13 +71,24 @@ public class Apropriator {
 	}
     
     private Apropriator() {
-    	appVersion = new Version(Util.getAppVersion());
+    	appVersion = new Version(getAppVersion());
 	}
 
-    private static void loadAppVersion() {
-		
-	}
-    
+    private String getAppVersion() {
+        final String ret = "?";
+		final InputStream stream = getClass()
+				.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
+        if (stream != null) {
+            final Properties prop = new Properties();
+            try {
+                prop.load(stream);
+                return prop.getProperty("version");
+            } catch (final IOException e) {
+            }
+        }
+        return ret;
+    }
+
 
 	private static void setLookAndFeel() {
         try {
