@@ -49,7 +49,7 @@ public class Apropriator {
     	Arguments arguments = Arguments.parse(args);
     	try {
 	    	setLookAndFeel();
-	        apropriator.checkSoftwareUpdate(arguments.isUpdate(), arguments.getCsvFile().getParent());	        
+	        apropriator.handleSoftwareUpdate(arguments.isUpdate(), arguments.getCsvFile().getParent());	        
 	        apropriator.doItForMePlease(arguments.getCsvFile());
         } catch (final Throwable e) {
             JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!\n" + e.getClass().getName() + ":" + e.getMessage());
@@ -58,8 +58,17 @@ public class Apropriator {
         }
     }
 
-	private void checkSoftwareUpdate(boolean update, String targetFolder) {
-		SoftwareUpdate.update(appVersion, targetFolder);
+	private void handleSoftwareUpdate(boolean update, String targetFolder) {
+		if (update) {
+			SoftwareUpdate.update(appVersion, targetFolder);
+		} else {
+			try {
+				Runtime.getRuntime().exec(
+						new String[] {"java", "-jar", "alm-apropriator-" + appVersion + ".jar", "update"});
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
     
     private Apropriator() {

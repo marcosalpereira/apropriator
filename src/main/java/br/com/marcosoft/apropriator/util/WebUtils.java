@@ -1,7 +1,6 @@
 package br.com.marcosoft.apropriator.util;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,10 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
-
-import org.apache.commons.io.IOUtils;
 
 public class WebUtils {
 	private static final int BUFFER_SIZE = 4096;

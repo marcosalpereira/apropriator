@@ -171,12 +171,12 @@ public class SelectOptionWindow extends JDialog {
         this.setLocation(screenWidth / 2 - this.getWidth() / 2, 30);
     }
 
-    private void btnConfirmarActionPerformed(@SuppressWarnings("unused") ActionEvent evt) {
+    private void btnConfirmarActionPerformed(ActionEvent evt) {
         selectedOption = (String) cboProjetos.getSelectedItem();
     	this.dispose();
     }
 
-    private void btnCancelarActionPerformed(@SuppressWarnings("unused") ActionEvent evt) {
+    private void btnCancelarActionPerformed(ActionEvent evt) {
     	this.dispose();
     	this.selectedOption = null;
     }
