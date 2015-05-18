@@ -1,11 +1,7 @@
 package br.com.marcosoft.apropriator;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-import org.apache.commons.io.IOUtils;
+import java.util.Arrays;
 
 public class Arguments {
 	private File csvFile;
@@ -13,6 +9,8 @@ public class Arguments {
 	
 	public static Arguments parse(String args[]) {
 		Arguments arguments = new Arguments();
+		
+		System.out.println("Arguments:" + Arrays.asList(args));
 		
 		String nomeCsv = null;
 	    if (args.length > 0) {

@@ -1,7 +1,5 @@
 package br.com.marcosoft.apropriator.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -9,7 +7,6 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
 
 public class Util {
 

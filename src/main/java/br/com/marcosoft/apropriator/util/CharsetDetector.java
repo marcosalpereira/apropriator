@@ -24,7 +24,9 @@ public class CharsetDetector {
     String encoding = detector.getDetectedCharset();
     // (5)
     detector.reset();
-
+    
+    fis.close();
+    
     return encoding;
 
   }

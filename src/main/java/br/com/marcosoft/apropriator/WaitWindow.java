@@ -122,7 +122,7 @@ public class WaitWindow extends JDialog {
         this.setLocation(screenWidth / 2 - this.getWidth() / 2, 30);
     }
 
-    private void btnSinalizarErroActionPerformed(@SuppressWarnings("unused") ActionEvent evt) {
+    private void btnSinalizarErroActionPerformed(ActionEvent evt) {
     	this.interrompidoPeloUsuario = true;
     }
 

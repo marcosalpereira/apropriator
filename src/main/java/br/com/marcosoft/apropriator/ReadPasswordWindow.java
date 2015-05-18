@@ -146,12 +146,12 @@ public class ReadPasswordWindow extends JDialog {
         this.setLocation(screenWidth / 2 - this.getWidth() / 2, screenHeight / 2 - this.getHeight() / 2);
     }
 
-    private void btnConfirmarActionPerformed(@SuppressWarnings("unused") ActionEvent evt) {
+    private void btnConfirmarActionPerformed(ActionEvent evt) {
         password = new String(txtPassword.getPassword());
     	this.dispose();
     }
 
-    private void btnCancelarActionPerformed(@SuppressWarnings("unused") ActionEvent evt) {
+    private void btnCancelarActionPerformed(ActionEvent evt) {
     	this.dispose();
     	this.password = null;
     }

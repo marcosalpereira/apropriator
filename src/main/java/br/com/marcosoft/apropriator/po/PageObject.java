@@ -9,8 +9,8 @@ import org.openqa.selenium.WebElement;
 import br.com.marcosoft.apropriator.Condition;
 import br.com.marcosoft.apropriator.WaitWindow;
 import br.com.marcosoft.apropriator.selenium.SeleniumSupport;
-import br.com.marcosoft.apropriator.util.WebUtils;
 import br.com.marcosoft.apropriator.util.Util;
+import br.com.marcosoft.apropriator.util.WebUtils;
 
 public class PageObject {
 

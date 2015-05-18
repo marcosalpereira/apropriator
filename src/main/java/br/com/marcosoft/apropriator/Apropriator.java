@@ -31,6 +31,7 @@ import br.com.marcosoft.apropriator.po.VisaoGeralPage;
 import br.com.marcosoft.apropriator.selenium.SeleniumSupport;
 import br.com.marcosoft.apropriator.util.ApplicationProperties;
 import br.com.marcosoft.apropriator.util.Cipher;
+import br.com.marcosoft.apropriator.util.Exec;
 import br.com.marcosoft.apropriator.util.SoftwareUpdate;
 import br.com.marcosoft.apropriator.util.Util;
 import br.com.marcosoft.apropriator.util.Version;
@@ -39,17 +40,17 @@ import br.com.marcosoft.apropriator.util.Version;
  * Apropriar SGI.
  */
 public class Apropriator {
-	
+
 	private final Version appVersion;
 
     private static final String CHAVE_SENHA_ALM_APP_PROPERTIES = "alm.password";
 
     public static void main(final String[] args) {
     	final Apropriator apropriator = new Apropriator();
-    	Arguments arguments = Arguments.parse(args);
+    	final Arguments arguments = Arguments.parse(args);
     	try {
 	    	setLookAndFeel();
-	        apropriator.checkSoftwareUpdate(arguments.isUpdate(), arguments.getCsvFile().getParent());	        
+	        apropriator.handleSoftwareUpdate(arguments);
 	        apropriator.doItForMePlease(arguments.getCsvFile());
         } catch (final Throwable e) {
             JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!\n" + e.getClass().getName() + ":" + e.getMessage());
@@ -58,10 +59,18 @@ public class Apropriator {
         }
     }
 
-	private void checkSoftwareUpdate(boolean update, String targetFolder) {
-		SoftwareUpdate.update(appVersion, targetFolder);
+	private void handleSoftwareUpdate(Arguments arguments) {
+		final File csvFile = arguments.getCsvFile();
+		final String targetFolder = csvFile.getParent();
+		if (arguments.isUpdate()) {
+			SoftwareUpdate.update(appVersion, targetFolder);
+			System.exit(0);
+		} else {
+			final String jar = String.format("%s%salm-apropriator-%s.jar", targetFolder, File.separator, appVersion);
+			Exec.jar(jar, csvFile.getPath(), "update");
+		}
 	}
-    
+
     private Apropriator() {
     	appVersion = new Version(getAppVersion());
 	}
@@ -311,7 +320,7 @@ public class Apropriator {
         }
 
         verificarFinalizarTarefas(progressInfo);
-        
+
         progressInfo.dispose();
 
         SeleniumSupport.stopSelenium();
@@ -344,7 +353,7 @@ public class Apropriator {
             }
         }
     }
-    
+
     private void verificarFinalizarTarefas(ProgressInfo progressInfo) {
         final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
         final Collection<TaskSummary> summaryFinishedTasks = tasksHandler.getResumoTarefasFinalizadas();
@@ -362,7 +371,7 @@ public class Apropriator {
 			final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(summary);
 			visaoGeralPage.incluirComentarioFinalizacaoTarefa(summary);
 			return true;
-			
+
         } catch (final RuntimeException e) {
             final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
             if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
@@ -376,7 +385,7 @@ public class Apropriator {
 
             }
         }
-	}    
+	}
 
     private RastreamentoHorasPage gotoApropriationPage(TaskWeeklySummary summary) {
         final Alm alm = new Alm();
