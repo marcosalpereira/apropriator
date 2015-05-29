@@ -80,7 +80,7 @@ public class ApropriationFile extends BaseModel {
             return System.getProperty(LOGIN_CPF);
         }
 
-        public String getUrlAlm() {
+        public String getUrlApropriacao() {
             return System.getProperty(ALM_URL, "https://alm.serpro/");
         }
 

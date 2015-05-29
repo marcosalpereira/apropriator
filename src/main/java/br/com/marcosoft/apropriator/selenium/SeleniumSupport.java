@@ -26,9 +26,9 @@ public class SeleniumSupport {
     /**
      * Inicializa o Selenium.
      */
-    public static void initSelenium(Config config, String browserUrl) {
+    public static void initSelenium(Config config) {
         webDriver = getDriver(config);
-        webDriver.get(browserUrl);
+        webDriver.get(config.getUrlApropriacao());
     }
 
     private static WebDriver getDriver(Config config) {

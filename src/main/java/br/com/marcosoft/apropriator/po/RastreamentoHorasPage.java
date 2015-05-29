@@ -8,8 +8,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
-import br.com.marcosoft.apropriator.ProgressInfo;
-import br.com.marcosoft.apropriator.ProgressInfo.TipoTempo;
 import br.com.marcosoft.apropriator.model.DaySummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
 import br.com.marcosoft.apropriator.util.Util;
@@ -30,33 +28,7 @@ public class RastreamentoHorasPage extends PageObject {
         return isDisplayed(By.id("Timesheet_next_button"));
     }
 
-    /**
-     * Apropriate task.
-     * @param progressInfo progressInfo
-     * @param summaryApropriando task daily summary
-     */
-    public void apropriate(ProgressInfo progressInfo, final TaskWeeklySummary summaryApropriando) {
-        final Date data = summaryApropriando.getDataInicio();
-
-        progressInfo.setResumoApropriando(summaryApropriando);
-
-        irParaSemana(data);
-        criarLinhaTempoPadrao();
-
-        final TaskWeeklySummary summaryAntes = lerValoresAtuais();
-        final TaskWeeklySummary summaryDepois = summaryAntes.somar(summaryApropriando);
-
-        progressInfo.setTempo(TipoTempo.ANTES, summaryAntes);
-        progressInfo.setTempo(TipoTempo.DEPOIS, summaryDepois);
-
-        digitarMinutos(summaryDepois);
-        salvarAlteracoes();
-
-        irParaSemana(data);
-        verificarApropriacoes(summaryDepois);
-    }
-
-    private void digitarMinutos(final TaskWeeklySummary summaryDepois) {
+    public void digitarMinutos(final TaskWeeklySummary summaryDepois) {
         for (final DaySummary daySummary : summaryDepois.getDaysSummary()) {
             if (daySummary.getSum() > 0) {
                 digitarMinutos(daySummary.getDay(), daySummary.getHoras());
@@ -65,31 +37,7 @@ public class RastreamentoHorasPage extends PageObject {
         }
     }
 
-    private void verificarApropriacoes(TaskWeeklySummary esperado) {
-        final TaskWeeklySummary reais = lerValoresAtuais();
-
-        final StringBuilder erros = new StringBuilder();
-        for (final DaySummary daySummaryEsperado : esperado.getDaysSummary()) {
-        	final int diaSemana = daySummaryEsperado.getDay();
-			final DaySummary daySummaryReal = reais.getDaySummary(diaSemana);
-			if (!daySummaryEsperado.equals(daySummaryReal)) {
-        		erros.append(
-        				String.format(
-        						"Dia %s esperado %s encontrado %s\n",
-        						Util.nomeDiaSemana(diaSemana),
-        						Util.formatMinutesDecimal(daySummaryEsperado.getHoras()),
-        						Util.formatMinutesDecimal(daySummaryReal.getHoras())
-        				)
-        		);
-        	}
-        }
-        if (erros.length() > 0) {
-        	throw new IllegalStateException(
-        			"Deu algum problema na apropriação:" + erros.toString());
-        }
-    }
-
-    private TaskWeeklySummary lerValoresAtuais() {
+    public TaskWeeklySummary lerValoresLinhaTempo() {
     	final TaskWeeklySummary valoresAtuais = new TaskWeeklySummary();
     	final List<DaySummary> daysSummary = valoresAtuais.getDaysSummary();
     	for (int diaSemana = Calendar.SUNDAY; diaSemana<=Calendar.SATURDAY; diaSemana++) {
@@ -117,7 +65,7 @@ public class RastreamentoHorasPage extends PageObject {
 		return element;
 	}
 
-    private void irParaSemana(Date data) {
+    public void irParaSemana(Date data) {
         final Calendar dataApropriacao = Util.toCalendar(data);
         for (;;) {
             final int dataNaSemana = isDataDentroSemanaAtual(dataApropriacao);
@@ -135,7 +83,6 @@ public class RastreamentoHorasPage extends PageObject {
     }
 
     private void irParaSemanaSeguinte() {
-        System.out.println("Semana seguinte");
        click(By.xpath("//*[@id='Timesheet_next_button']/a"));
     }
 
@@ -166,7 +113,7 @@ public class RastreamentoHorasPage extends PageObject {
         return 1;
     }
 
-    private void criarLinhaTempoPadrao() {
+    public void criarLinhaTempoPadrao() {
         final WebElement element = getWebDriver().findElement(
             By.id("Timesheet_Table"));
         final String text = element.getText();

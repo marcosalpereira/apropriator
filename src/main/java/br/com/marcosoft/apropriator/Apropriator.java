@@ -17,8 +17,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
+import br.com.marcosoft.apropriator.ProgressInfo.TipoTempo;
 import br.com.marcosoft.apropriator.model.ApropriationFile;
 import br.com.marcosoft.apropriator.model.ApropriationFile.Config;
+import br.com.marcosoft.apropriator.model.DaySummary;
 import br.com.marcosoft.apropriator.model.TaskRecord;
 import br.com.marcosoft.apropriator.model.TaskSummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
@@ -121,15 +123,6 @@ public class Apropriator {
         }
     }
 
-    private void iniciarSelenium(Config config, String browserUrl) {
-        final WaitWindow waitWindow = new WaitWindow("Iniciando Selenium " + browserUrl);
-        try {
-            SeleniumSupport.initSelenium(config, browserUrl);
-        } finally {
-            waitWindow.dispose();
-        }
-    }
-
     /**
      * Verificar a compatibilidade desta implementacao com a versao do arquivo de integracao.
      * @param strVersion versao que esta no arquivo de integracao
@@ -194,8 +187,10 @@ public class Apropriator {
     private void apropriate() {
         final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
         final List<TaskWeeklySummary> tasksWeeklySummary = tasksHandler.getWeeklySummary();
-        if (registrosApropriacoesIntegros()) {
-            apropriateAlm(tasksWeeklySummary);
+        if (!tasksWeeklySummary.isEmpty()) {
+        	if (registrosApropriacoesIntegros()) {
+        		apropriate(tasksWeeklySummary);
+        	}
         }
         gravarArquivoRetornoApropriacao(tasksWeeklySummary);
     }
@@ -302,47 +297,70 @@ public class Apropriator {
         return true;
     }
 
-    private void apropriateAlm(List<TaskWeeklySummary> tasksWeeklySummary) {
+    private void apropriate(List<TaskWeeklySummary> tasksWeeklySummary) {
 
-        if (tasksWeeklySummary.isEmpty()) {
-            return ;
-        }
+    	final ProgressInfo progressInfo = new ProgressInfo(montarTitulo());
+    	progressInfo.setInfoMessage("Iniciando apropriações...");
 
+
+    		iniciarSelenium();
+
+
+	        for (final TaskWeeklySummary summary : tasksWeeklySummary) {
+	            if (!apropriate(summary, progressInfo)) {
+	                break;
+	            }
+	        }
+
+	        verificarFinalizarTarefas(progressInfo);
+
+	        progressInfo.dispose();
+
+	        SeleniumSupport.stopSelenium();
+
+    }
+
+    private void iniciarSelenium() {
         final Config config = apropriationFile.getConfig();
-        iniciarSelenium(config, config.getUrlAlm());
-
-        final ProgressInfo progressInfo = new ProgressInfo(montarTitulo());
-
-        for (final TaskWeeklySummary summary : tasksWeeklySummary) {
-            if (!apropriateAlm(summary, progressInfo)) {
-                break;
-            }
-        }
-
-        verificarFinalizarTarefas(progressInfo);
-
-        progressInfo.dispose();
-
-        SeleniumSupport.stopSelenium();
-
-    }
-
-    private String montarTitulo() {
-        return "Apropriator v" + appVersion.get() + " - Macros" + getMacrosVersion();
-    }
-
-    private boolean apropriateAlm(TaskWeeklySummary summary, ProgressInfo progressInfo) {
+        final WaitWindow waitWindow = new WaitWindow("Iniciando Apropriacoes");
         try {
-            final RastreamentoHorasPage apropriationPage = gotoApropriationPage(summary);
-            apropriationPage.apropriate(progressInfo, summary);
-            summary.setApropriado(true);
+            SeleniumSupport.initSelenium(config);
+        } finally {
+            waitWindow.dispose();
+        }
+    }
+
+    private boolean apropriate(TaskWeeklySummary summaryApropriando, ProgressInfo progressInfo) {
+    	final Date data = summaryApropriando.getDataInicio();
+        try {
+            final RastreamentoHorasPage apropriationPage = gotoApropriationPage(summaryApropriando);
+            progressInfo.setResumoApropriando(summaryApropriando);
+
+            apropriationPage.irParaSemana(data);
+            apropriationPage.criarLinhaTempoPadrao();
+
+            final TaskWeeklySummary summaryAntes = apropriationPage.lerValoresLinhaTempo();
+            final TaskWeeklySummary summaryDepois = summaryAntes.somar(summaryApropriando);
+
+            progressInfo.setTempo(TipoTempo.ANTES, summaryAntes);
+            progressInfo.setTempo(TipoTempo.DEPOIS, summaryDepois);
+
+            apropriationPage.digitarMinutos(summaryDepois);
+            apropriationPage.salvarAlteracoes();
+
+            apropriationPage.irParaSemana(data);
+
+            final TaskWeeklySummary valoresLinhaTempoReais = apropriationPage.lerValoresLinhaTempo();
+			verificarApropriacoes(summaryDepois, valoresLinhaTempoReais);
+
+            summaryApropriando.setApropriado(true);
             return true;
 
         } catch (final RuntimeException e) {
             final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
             if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
                 progressInfo.setInfoMessage("Tentando apropriar novamente mesma atividade!!!");
-                return apropriateAlm(summary, progressInfo);
+                return apropriate(summaryApropriando, progressInfo);
 
             } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
                 return true;
@@ -353,6 +371,34 @@ public class Apropriator {
             }
         }
     }
+
+    private String montarTitulo() {
+        return "Apropriator v" + appVersion.get() + " - Macros" + getMacrosVersion();
+    }
+
+    private void verificarApropriacoes(TaskWeeklySummary esperado, final TaskWeeklySummary reais) {
+
+        final StringBuilder erros = new StringBuilder();
+        for (final DaySummary daySummaryEsperado : esperado.getDaysSummary()) {
+        	final int diaSemana = daySummaryEsperado.getDay();
+			final DaySummary daySummaryReal = reais.getDaySummary(diaSemana);
+			if (!daySummaryEsperado.equals(daySummaryReal)) {
+        		erros.append(
+        				String.format(
+        						"Dia %s esperado %s encontrado %s\n",
+        						Util.nomeDiaSemana(diaSemana),
+        						Util.formatMinutesDecimal(daySummaryEsperado.getHoras()),
+        						Util.formatMinutesDecimal(daySummaryReal.getHoras())
+        				)
+        		);
+        	}
+        }
+        if (erros.length() > 0) {
+        	throw new IllegalStateException(
+        			"Deu algum problema na apropriação:" + erros.toString());
+        }
+    }
+
 
     private void verificarFinalizarTarefas(ProgressInfo progressInfo) {
         final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();

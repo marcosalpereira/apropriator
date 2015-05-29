@@ -61,7 +61,7 @@ public class PageObject {
             .click();
     }
 
-    protected void salvarAlteracoes() {
+    public void salvarAlteracoes() {
         clickSaveButton();
         final Condition condition = new Condition() {
             public boolean satisfied() {
@@ -100,11 +100,11 @@ public class PageObject {
                 , idItemTrabalho);
         return url;
     }
-    
+
 	protected void executeScript(String js) {
-		JavascriptExecutor jsExec = (JavascriptExecutor) getWebDriver();
+		final JavascriptExecutor jsExec = (JavascriptExecutor) getWebDriver();
         jsExec.executeScript(js);
 	}
-    
+
 
 }
