@@ -15,23 +15,26 @@ public class Alm extends PageObject {
 
         final String url = montarUrlRastreamentoHorasAlm(summary.getContexto(), summary.getItemTrabalho().getId());
         final WebDriver driver = getWebDriver();
+        tratarProblemaNaoReconhecimentoCamposPagina(driver);
+        driver.get(url);
+        return new RastreamentoHorasPage();
+    }
 
-        driver.get("about:blank");
+	private void tratarProblemaNaoReconhecimentoCamposPagina(
+			final WebDriver driver) {
+		driver.get("about:blank");
         try {
         	driver.switchTo().alert().accept();
         } catch (final NoAlertPresentException e) {
 
         }
         sleep(1000);
-        driver.get(url);
-        return new RastreamentoHorasPage();
-    }
+	}
 
     public VisaoGeralPage gotoApropriationPageVisaoGeral(TaskSummary summary) {
         final String url = montarUrlVisaoGeralAlm(summary.getTask().getContexto(), summary.getTask().getItemTrabalho().getId());
         final WebDriver driver = getWebDriver();
-        driver.get("about:blank");
-        sleep(1000);
+        tratarProblemaNaoReconhecimentoCamposPagina(driver);
         driver.get(url);
         return new VisaoGeralPage();
     }
