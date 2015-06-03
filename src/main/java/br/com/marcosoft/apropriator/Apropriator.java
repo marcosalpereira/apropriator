@@ -45,6 +45,8 @@ public class Apropriator {
 
 	private final Version appVersion;
 
+	private final ProgressInfo progressInfo;
+
     private static final String CHAVE_SENHA_ALM_APP_PROPERTIES = "alm.password";
 
     public static void main(final String[] args) {
@@ -58,6 +60,8 @@ public class Apropriator {
             JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!\n" + e.getClass().getName() + ":" + e.getMessage());
             apropriator.gravarArquivoRetornoErro(e, arguments.getCsvFile());
             e.printStackTrace();
+        } finally {
+        	apropriator.progressInfo.dispose();
         }
     }
 
@@ -75,6 +79,7 @@ public class Apropriator {
 
     private Apropriator() {
     	appVersion = new Version(getAppVersion());
+    	progressInfo = new ProgressInfo();
 	}
 
     private String getAppVersion() {
@@ -185,6 +190,7 @@ public class Apropriator {
     }
 
     private void apropriate() {
+    	progressInfo.setTitle(montarTitulo());
         final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
         final List<TaskWeeklySummary> tasksWeeklySummary = tasksHandler.getWeeklySummary();
         if (!tasksWeeklySummary.isEmpty()) {
@@ -298,49 +304,43 @@ public class Apropriator {
     }
 
     private void apropriate(List<TaskWeeklySummary> tasksWeeklySummary) {
-
-    	final ProgressInfo progressInfo = new ProgressInfo(montarTitulo());
     	progressInfo.setInfoMessage("Iniciando apropriações...");
 
+    	initSelenium();
 
-    		iniciarSelenium();
+    	for (final TaskWeeklySummary summary : tasksWeeklySummary) {
+    		if (!apropriate(summary, null, null)) {
+    			break;
+    		}
+    	}
 
+    	verificarFinalizarTarefas();
 
-	        for (final TaskWeeklySummary summary : tasksWeeklySummary) {
-	            if (!apropriate(summary, progressInfo)) {
-	                break;
-	            }
-	        }
+    	progressInfo.dispose();
 
-	        verificarFinalizarTarefas(progressInfo);
-
-	        progressInfo.dispose();
-
-	        SeleniumSupport.stopSelenium();
+    	SeleniumSupport.stopSelenium();
 
     }
 
-    private void iniciarSelenium() {
-        final Config config = apropriationFile.getConfig();
-        final WaitWindow waitWindow = new WaitWindow("Iniciando Apropriacoes");
-        try {
-            SeleniumSupport.initSelenium(config);
-        } finally {
-            waitWindow.dispose();
-        }
-    }
+	private void initSelenium() {
+		final Config config = apropriationFile.getConfig();
+    	SeleniumSupport.initSelenium(config);
+	}
 
-    private boolean apropriate(TaskWeeklySummary summaryApropriando, ProgressInfo progressInfo) {
-    	final Date data = summaryApropriando.getDataInicio();
-        try {
+    private boolean apropriate(TaskWeeklySummary summaryApropriando, TaskWeeklySummary summaryAntes, TaskWeeklySummary summaryDepois) {
+    	try {
             final RastreamentoHorasPage apropriationPage = gotoApropriationPage(summaryApropriando);
             progressInfo.setResumoApropriando(summaryApropriando);
 
-            apropriationPage.irParaSemana(data);
+            final Date dataInicio = summaryApropriando.getDataInicio();
+
+			apropriationPage.irParaSemana(dataInicio);
             apropriationPage.criarLinhaTempoPadrao();
 
-            final TaskWeeklySummary summaryAntes = apropriationPage.lerValoresLinhaTempo();
-            final TaskWeeklySummary summaryDepois = summaryAntes.somar(summaryApropriando);
+            if (summaryDepois == null) {
+            	summaryAntes = apropriationPage.lerValoresLinhaTempo();
+            	summaryDepois = summaryAntes.somar(summaryApropriando);
+            }
 
             progressInfo.setTempo(TipoTempo.ANTES, summaryAntes);
             progressInfo.setTempo(TipoTempo.DEPOIS, summaryDepois);
@@ -348,7 +348,7 @@ public class Apropriator {
             apropriationPage.digitarMinutos(summaryDepois);
             apropriationPage.salvarAlteracoes();
 
-            apropriationPage.irParaSemana(data);
+            apropriationPage.irParaSemana(dataInicio);
 
             final TaskWeeklySummary valoresLinhaTempoReais = apropriationPage.lerValoresLinhaTempo();
 			verificarApropriacoes(summaryDepois, valoresLinhaTempoReais);
@@ -360,7 +360,7 @@ public class Apropriator {
             final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
             if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
                 progressInfo.setInfoMessage("Tentando apropriar novamente mesma atividade!!!");
-                return apropriate(summaryApropriando, progressInfo);
+                return apropriate(summaryApropriando, summaryAntes, summaryDepois);
 
             } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
                 return true;
@@ -400,7 +400,7 @@ public class Apropriator {
     }
 
 
-    private void verificarFinalizarTarefas(ProgressInfo progressInfo) {
+    private void verificarFinalizarTarefas() {
         final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
         final Collection<TaskSummary> summaryFinishedTasks = tasksHandler.getResumoTarefasFinalizadas();
         for (final TaskSummary summary : summaryFinishedTasks) {

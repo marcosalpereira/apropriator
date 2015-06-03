@@ -53,7 +53,7 @@ import br.com.marcosoft.apropriator.util.Util;
 public class ProgressInfo extends JFrame {
 
     private static final Dimension FULL_SIZE = new Dimension(751, 250);
-    private static final Dimension FINALIZANDO_SIZE = new Dimension(751, 90);
+    private static final Dimension MIN_SIZE = new Dimension(751, 90);
 
 	/**
      * Serial.
@@ -81,12 +81,16 @@ public class ProgressInfo extends JFrame {
 	private static final Color BLUE_BACK_GROUND = new Color(58,71,106);
 
     /** Creates new form NewJPanel */
-    public ProgressInfo(String title) {
-        initComponents(title);
+    public ProgressInfo() {
+        initComponents();
     }
 
-    @SuppressWarnings("serial")
-    private void initComponents(String title) {
+    @Override
+    public void setTitle(String title) {
+    	lblTitle.setText(title);
+    }
+
+    private void initComponents() {
 
         final GridBagLayout thisLayout1 = new GridBagLayout();
         thisLayout1.columnWidths = new int[] {7};
@@ -110,7 +114,7 @@ public class ProgressInfo extends JFrame {
 
             getContentPane().add(panMain, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 0, 3, 0), 0, 0));
 
-            panTitle = criarPanelTitulo(title);
+            panTitle = criarPanelTitulo();
 			panMain.add(panTitle,
 					new GridBagConstraints(0, 0, 2, 1, 0.0, 0.0,
 							GridBagConstraints.NORTH,
@@ -136,7 +140,7 @@ public class ProgressInfo extends JFrame {
 
         this.setUndecorated(true);
         this.pack();
-        this.setSize(FULL_SIZE);
+        this.setSize(MIN_SIZE);
         this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         centerMe();
@@ -147,6 +151,7 @@ public class ProgressInfo extends JFrame {
 
     }
 
+	@SuppressWarnings("serial")
 	private JPanel criarPanelBody() {
 		final JPanel panBody = new JPanel();
 		panBody.setBackground(BLUE_BACK_GROUND);
@@ -263,7 +268,7 @@ public class ProgressInfo extends JFrame {
 		}
 	}
 
-	private JPanel criarPanelTitulo(String title) {
+	private JPanel criarPanelTitulo() {
 		final JPanel panTitle = new JPanel();
 		final GridBagLayout panTitleLayout = new GridBagLayout();
 		panTitleLayout.rowWeights = new double[] {0.0, 0.1};
@@ -277,7 +282,7 @@ public class ProgressInfo extends JFrame {
 			panTitle.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(3, 0, 3, 0), 0, 0));
 			lblTitle.setBackground(new java.awt.Color(249, 249, 249));
 			lblTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			lblTitle.setText(title);
+			lblTitle.setText("");
 			lblTitle.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 			lblTitle.setOpaque(true);
 			lblTitle.setSize(679, 25);
@@ -325,11 +330,11 @@ public class ProgressInfo extends JFrame {
     }
 
     public void setInfoFinalizando(TaskSummary summary) {
-  		setInfoMessage("Finalizando KDSHK KHDK KHGK GK KHKGH KDHSKJHKSDF	DSFKDS KDJSHKD Tarefa:"
-  					+ summary.getTask().getContexto()
+  		setInfoMessage("Finalizando Tarefa:"
+  					+ summary.getTask().getItemTrabalho()
   					+ summary.getComentario());
   		panBody.setVisible(false);
-  		setSize(FINALIZANDO_SIZE);
+  		setSize(MIN_SIZE);
     }
 
     public void setTempo(TipoTempo tipoTempo, TaskWeeklySummary summary) {
@@ -357,7 +362,8 @@ public class ProgressInfo extends JFrame {
                 tds.getDaysSummary().add(new DaySummary(day, sum += 30));
             }
         }
-        final ProgressInfo progressInfo = new ProgressInfo("casa");
+        final ProgressInfo progressInfo = new ProgressInfo();
+        progressInfo.setTitle("casa");
 //        progressInfo.setTempo(TipoTempo.ANTES, tds);
 //        progressInfo.setResumoApropriando(tds);
 //        progressInfo.setTempo(TipoTempo.DEPOIS, tds.somar(tds));

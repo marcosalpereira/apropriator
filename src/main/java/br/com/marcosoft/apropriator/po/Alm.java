@@ -1,5 +1,6 @@
 package br.com.marcosoft.apropriator.po;
 
+import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 
 import br.com.marcosoft.apropriator.model.TaskSummary;
@@ -14,7 +15,13 @@ public class Alm extends PageObject {
 
         final String url = montarUrlRastreamentoHorasAlm(summary.getContexto(), summary.getItemTrabalho().getId());
         final WebDriver driver = getWebDriver();
+
         driver.get("about:blank");
+        try {
+        	driver.switchTo().alert().accept();
+        } catch (final NoAlertPresentException e) {
+
+        }
         sleep(1000);
         driver.get(url);
         return new RastreamentoHorasPage();
