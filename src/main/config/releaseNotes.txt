@@ -1,0 +1,10 @@
+Versão 1.8
+	- Não obrigar descrição para um item de trabalho "123;foo" pode ser apenas "123"
+	- Opção para finalizar uma tarefa ou uma atividade ou ambos.
+	  Criada as opcoes na coluna finalizar: Tarefa, Atividade e Atividade/Tarefa.
+	  Tarefa - coloca a tarefa como finalizada;
+	  Atividade - se na descricao da atividade for na forma "id,id,...-descricao" Ex: "123,456-foo" ou "123-foo"
+	              o sistema irá finalizar cada um dos itens da lista; Se o item não for possivel
+	              finalizar, coloca um comentario na discussão da tarefa.
+	  Atividade/Tarefa - irá fazer os dois itens especificados acima
+	- Mostrar as alterações da release.  

@@ -75,7 +75,7 @@ public class TasksHandlerTest {
         final List<TaskSummary> esperado = Arrays.asList(
             new TaskSummary(new Task("ctx", new ItemTrabalho(2, "IMP"), "b"), 150));
 
-        assertEquals(esperado, new ArrayList<TaskSummary>(handler.getResumoTarefasFinalizadas()));
+        assertEquals(esperado, new ArrayList<TaskSummary>(handler.getResumoAtividadesFinalizadas()));
     }
 
     private ApropriationFile parse(String arquivoCsv) throws IOException {

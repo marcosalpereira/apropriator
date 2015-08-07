@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<name>alm-apropriator</name>
 
-	<version>1.6</version>
+	<version>1.8</version>
 
 	<build>
 		<plugins>
@@ -114,15 +114,11 @@
 					<groupId>org.seleniumhq.selenium</groupId>
 				</exclusion>
 				<exclusion>
-					<artifactId>selenium-support</artifactId>
-					<groupId>org.seleniumhq.selenium</groupId>
-				</exclusion>
-				<exclusion>
 					<artifactId>webbit</artifactId>
 					<groupId>org.webbitserver</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency> 
 
 		<dependency>
 			<groupId>commons-lang</groupId>

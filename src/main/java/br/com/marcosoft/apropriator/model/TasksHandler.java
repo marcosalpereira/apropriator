@@ -1,6 +1,7 @@
 package br.com.marcosoft.apropriator.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import br.com.marcosoft.apropriator.model.TaskRecord.OpcaoFinalizacao;
 import br.com.marcosoft.apropriator.util.Key;
 
 /**
@@ -90,29 +92,48 @@ public class TasksHandler extends BaseModel {
     }
 
     private Collection<TaskRecord> selecionarRegistrosNaoApropriados() {
+        final Set<Task> taskNaoRegistradas = new LinkedHashSet<Task>();
+        for (final TaskRecord taskRecord : taskRecords) {
+            if (!taskRecord.isRegistrado()) {
+                taskNaoRegistradas.add(taskRecord.getTask());
+            }
+        }
+
         final Collection<TaskRecord> ret = new ArrayList<TaskRecord>();
         for (final TaskRecord task : taskRecords) {
-            if (!task.isRegistrado()) {
+            if (taskNaoRegistradas.contains(task)) {
                 ret.add(task);
             }
         }
         return ret;
     }
 
+    public Collection<TaskSummary> getResumoAtividadesFinalizadas() {
+    	return getResumoFinalizadas(
+    			Arrays.asList(
+    					OpcaoFinalizacao.ATIVIDADE, OpcaoFinalizacao.ATIVIDADE_TAREFA));
+    }
+
     public Collection<TaskSummary> getResumoTarefasFinalizadas() {
-        final Set<Task> taskFinalizadas = new LinkedHashSet<Task>();
+		return getResumoFinalizadas(Arrays.asList(OpcaoFinalizacao.TAREFA,
+				OpcaoFinalizacao.ATIVIDADE_TAREFA));
+    }
+
+	private Collection<TaskSummary> getResumoFinalizadas(
+			final Collection<OpcaoFinalizacao> opcaoFinalizacao) {
+		final Set<Task> taskFinalizadas = new LinkedHashSet<Task>();
         for (final TaskRecord taskRecord : taskRecords) {
-            if (taskRecord.isFinalizar() && !taskRecord.isRegistrado()) {
+			if (opcaoFinalizacao.contains(taskRecord.getFinalizar())  && !taskRecord.isRegistrado()) {
                 taskFinalizadas.add(taskRecord.getTask());
             }
         }
 
         final Map<Task, TaskSummary> map = new HashMap<Task, TaskSummary>();
 
-        for (Task taskFinalizada : taskFinalizadas) 
+        for (final Task taskFinalizada : taskFinalizadas)
         	for (final TaskRecord taskRecord : taskRecords) {
         		if (taskFinalizada.getContexto().equals(taskRecord.getTask().getContexto())
-        				&& taskFinalizada.getComentario().equals(taskRecord.getTask().getComentario())) {            
+        				&& taskFinalizada.getComentario().equals(taskRecord.getTask().getComentario())) {
                 TaskSummary summary = map.get(taskFinalizada);
                 if (summary == null) {
                     summary = new TaskSummary(taskFinalizada);
@@ -123,6 +144,6 @@ public class TasksHandler extends BaseModel {
         }
 
         return map.values();
-    }
+	}
 
 }

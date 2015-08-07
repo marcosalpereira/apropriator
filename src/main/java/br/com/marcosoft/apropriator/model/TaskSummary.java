@@ -1,8 +1,13 @@
 package br.com.marcosoft.apropriator.model;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import br.com.marcosoft.apropriator.util.Util;
 
 /**
  * Sumario da atividade.
@@ -66,4 +71,19 @@ public class TaskSummary extends BaseModel {
             .append(task).append(sum)
             .toString();
     }
+
+	public Collection<Integer> getIdsAtividades() {
+		final Collection<Integer> ids = new LinkedHashSet<Integer>();
+		final int posTraco = getComentario().indexOf('-');
+		if (posTraco > 0) {
+			final String sids = getComentario().substring(0, posTraco);
+			for (final String sid : sids.split(",", -1)) {
+				final int id = Util.parseInt(sid, 0);
+				if (id > 0) {
+					ids.add(id);
+				}
+			}
+		}
+		return ids;
+	}
 }

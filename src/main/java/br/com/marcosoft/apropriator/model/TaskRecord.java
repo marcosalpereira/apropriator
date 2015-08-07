@@ -27,7 +27,9 @@ public class TaskRecord extends BaseModel {
 
     private String horaTermino;
 
-    private boolean finalizar;
+    public enum OpcaoFinalizacao { NENHUM, TAREFA, ATIVIDADE, ATIVIDADE_TAREFA };
+
+    private OpcaoFinalizacao finalizar;
 
     private int duracao;
 
@@ -100,13 +102,13 @@ public class TaskRecord extends BaseModel {
         this.horaTermino = horaTermino;
     }
 
-    public boolean isFinalizar() {
+    public OpcaoFinalizacao isFinalizar() {
         return finalizar;
     }
 
-    public void setFinalizar(boolean finalizar) {
-        this.finalizar = finalizar;
-    }
+    public void setFinalizar(OpcaoFinalizacao finalizar) {
+		this.finalizar = finalizar;
+	}
 
     public int getDuracao() {
         return duracao;
@@ -183,5 +185,9 @@ public class TaskRecord extends BaseModel {
             .append(this.data)
             .toHashCode();
     }
+
+    public OpcaoFinalizacao getFinalizar() {
+		return finalizar;
+	}
 
 }

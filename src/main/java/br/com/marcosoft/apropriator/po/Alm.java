@@ -3,17 +3,14 @@ package br.com.marcosoft.apropriator.po;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 
-import br.com.marcosoft.apropriator.model.TaskSummary;
-import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
-
 public class Alm extends PageObject {
 
-    public RastreamentoHorasPage gotoApropriationPage(TaskWeeklySummary summary) throws NotLoggedInException {
+    public RastreamentoHorasPage gotoApropriationPage(String contexto, int id) throws NotLoggedInException {
         if (LoginPageAlm.isOnLoginPage()) {
             throw new NotLoggedInException();
         }
 
-        final String url = montarUrlRastreamentoHorasAlm(summary.getContexto(), summary.getItemTrabalho().getId());
+        final String url = montarUrlRastreamentoHorasAlm(contexto, id);
         final WebDriver driver = getWebDriver();
         tratarProblemaNaoReconhecimentoCamposPagina(driver);
         driver.get(url);
@@ -31,8 +28,8 @@ public class Alm extends PageObject {
         sleep(1000);
 	}
 
-    public VisaoGeralPage gotoApropriationPageVisaoGeral(TaskSummary summary) {
-        final String url = montarUrlVisaoGeralAlm(summary.getTask().getContexto(), summary.getTask().getItemTrabalho().getId());
+    public VisaoGeralPage gotoApropriationPageVisaoGeral(String contexto, int id) {
+        final String url = montarUrlVisaoGeralAlm(contexto, id);
         final WebDriver driver = getWebDriver();
         tratarProblemaNaoReconhecimentoCamposPagina(driver);
         driver.get(url);

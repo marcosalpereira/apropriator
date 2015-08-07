@@ -61,6 +61,11 @@ public class PageObject {
             .click();
     }
 
+	public WebElement getStatus() {
+		return FindElement.findElement(By.className("Select"),
+				FindElement.isEnabled("aria-label", "Status"));
+	}
+
     public void salvarAlteracoes() {
         clickSaveButton();
         final Condition condition = new Condition() {

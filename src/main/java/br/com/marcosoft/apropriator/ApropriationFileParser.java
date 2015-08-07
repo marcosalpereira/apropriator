@@ -11,6 +11,7 @@ import br.com.marcosoft.apropriator.model.ApropriationFile;
 import br.com.marcosoft.apropriator.model.ItemTrabalho;
 import br.com.marcosoft.apropriator.model.Task;
 import br.com.marcosoft.apropriator.model.TaskRecord;
+import br.com.marcosoft.apropriator.model.TaskRecord.OpcaoFinalizacao;
 import br.com.marcosoft.apropriator.util.CharsetDetector;
 import br.com.marcosoft.apropriator.util.Util;
 
@@ -107,7 +108,7 @@ public class ApropriationFileParser {
             taskRecord.setData(Util.parseDate(Util.DD_MM_YY_FORMAT, fields[POS_REG_DATA].substring(0, 8)));
             taskRecord.setRegistrado(!"Não".equals(fields[POS_REG_REGISTRADO]));
             taskRecord.setDuracao(duracao);
-            taskRecord.setFinalizar("Sim".equals(fields[POS_REG_FINALIZAR]));
+            taskRecord.setFinalizar(parseFinalizar(fields));
             taskRecord.setNumeroLinha(numeroLinha);
             taskRecord.setTask(parseTask(fields));
             taskRecord.setHoraInicio(parseHora(fields[POS_REG_HORA_INICIO]));
@@ -116,6 +117,23 @@ public class ApropriationFileParser {
             ret.adicionarTasksRecord(taskRecord);
         }
     }
+
+	private OpcaoFinalizacao parseFinalizar(final String[] fields) {
+		final String op = fields[POS_REG_FINALIZAR].trim().toLowerCase();
+		if ("sim".equals(op)) {
+			return OpcaoFinalizacao.ATIVIDADE;
+		}
+		if ("atividade".equals(op)) {
+			return OpcaoFinalizacao.ATIVIDADE;
+		}
+		if ("atividade/tarefa".equals(op)) {
+			return OpcaoFinalizacao.ATIVIDADE_TAREFA;
+		}
+		if ("tarefa".equals(op)) {
+			return OpcaoFinalizacao.TAREFA;
+		}
+		return OpcaoFinalizacao.NENHUM;
+	}
 
     private String parseHora(String hm) {
         if (hm == null || !hm.trim().matches("[0-9][0-9][.:][0-9][0-9]")) {
@@ -149,22 +167,22 @@ public class ApropriationFileParser {
 
     private Task parseTask(String[] fields) throws IOException {
         final String[] dados = fields[POS_REG_ITEM_TRABALHO].split(";");
-        if (dados.length < 2) {
-            throw new IOException(
-                "Erro lendo Item Trabalho ALM: Quantidade de campos difere da esperada!");
-        }
         final ItemTrabalho itemTrabalho;
         try {
-            itemTrabalho = new ItemTrabalho(Integer.parseInt(dados[0], 10), dados[1]);
+            String descricao = "";
+            if (dados.length > 1) {
+            	descricao = dados[1];
+            }
+			itemTrabalho = new ItemTrabalho(Integer.parseInt(dados[0], 10), descricao);
         } catch (final NumberFormatException e) {
             throw new IOException(
-                "Erro convertendo id do item de trabalho: Primeiro campo tem que ser um numero, foi encontrado "
-                    + fields[POS_REG_ITEM_TRABALHO]);
+            		String.format("Linha %d: Erro convertendo id do item de trabalho: Primeiro campo tem que ser um numero, foi encontrado %s",
+            				numeroLinha+1, fields[POS_REG_ITEM_TRABALHO]));
         }
 
         final String contexto = fields[POS_REG_CONTEXTO].trim();
         if (contexto.isEmpty()) {
-            throw new IllegalStateException("Contexto não pode ser vazio");
+            throw new IllegalStateException(String.format("Linha %d: Contexto não pode ser vazio", numeroLinha+1));
         }
 
         return new Task(contexto, itemTrabalho, fields[POS_REG_COMENTARIO]);

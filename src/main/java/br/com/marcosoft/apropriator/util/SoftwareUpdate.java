@@ -17,17 +17,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
+
+import org.apache.commons.io.FileUtils;
 
 import br.com.marcosoft.apropriator.util.WebUtils.Progress;
 
 
 
 public class SoftwareUpdate extends JFrame implements Progress {
-    private static final String APROPRIATOR_RELEASES_LATEST = 
+    private static final String APROPRIATOR_RELEASES_LATEST =
     		"https://github.com/marcosalpereira/apropriator/releases/latest";
 
     private static final long serialVersionUID = -6989750848125302233L;
@@ -36,9 +39,9 @@ public class SoftwareUpdate extends JFrame implements Progress {
 
     private JProgressBar progressBar;
 
-	private Version currentVersion;
+	private final Version currentVersion;
 
-	private String targetFolder;
+	private final String targetFolder;
 
 
     public SoftwareUpdate(Version currentVersion, String targetFolder) {
@@ -81,7 +84,7 @@ public class SoftwareUpdate extends JFrame implements Progress {
                 progressBar.setPreferredSize(new java.awt.Dimension(0, 20));
                 progressBar.setStringPainted(true);
                 progressBar.setFont(new java.awt.Font("Dialog",Font.BOLD,16));
-                
+
             }
 
             jp.setOpaque(true);
@@ -114,66 +117,76 @@ public class SoftwareUpdate extends JFrame implements Progress {
     }
 
     public static void main(String[] args) throws IOException {
-    	update(new Version("1.0"), "/tmp/a");
+    	showReleaseNotes("/home/54706424372/dev/java/src/apropriator/src/main/config");
+    	//update(new Version("1.0"), "/tmp/a");
     }
-	
+
 	public static void update(Version currentVersion, String targetFolder)  {
-		SoftwareUpdate update = new SoftwareUpdate(currentVersion, targetFolder);
+		final SoftwareUpdate update = new SoftwareUpdate(currentVersion, targetFolder);
 		try {
 			update.doIt();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 		update.dispose();
 	}
-	
+
 	private void doIt() throws IOException {
 		progressString("Apropriator v%s - Verificando se existe versão nova", currentVersion);
-		
-		Version latestVersion = checkForNewVersion(currentVersion);
-	
+
+		final Version latestVersion = checkForNewVersion(currentVersion);
+
 		if (latestVersion != null) {
-			String url = String.format(
-					"https://github.com/marcosalpereira/apropriator/releases/download/v%s/binario.zip", 
+			final String url = String.format(
+					"https://github.com/marcosalpereira/apropriator/releases/download/v%s/binario.zip",
 					latestVersion);
-			
+
 			progressString("Apropriator v%s - Atualizando para v%s ...", currentVersion, latestVersion);
-			
-	    	String zipFile = targetFolder + File.separator +  "binario.zip";
-			OutputStream out = new FileOutputStream(zipFile);			
+
+	    	final String zipFile = targetFolder + File.separator +  "binario.zip";
+			final OutputStream out = new FileOutputStream(zipFile);
 	    	WebUtils.downloadFile(url, out, this);
-	    	
+
 	    	unZipIt(zipFile, targetFolder);
-	    	
-	    	progressBar.setForeground(Color.red);
-	    	progressString("Versão Atualizada. Será usada somente na próxima execução");
-	    	Util.sleep(3000);
+
+	    	showReleaseNotes(targetFolder);
 		}
-		
+
 	}
-	
+
+	public static void showReleaseNotes(String root) {
+		final File file = new File(root + File.separator + "releaseNotes.txt");
+		if (file.canRead()) {
+			try {
+				final String conteudo = FileUtils.readFileToString(file, "UTF-8");
+				JOptionPane.showMessageDialog(null, conteudo, "Release Notes", JOptionPane.INFORMATION_MESSAGE);
+			} catch (final IOException e) {
+			}
+		}
+	}
+
 	private void progressString(String template, Object... objects) {
 		progressBar.setString(String.format(template, objects));
 	}
 
 	private void unZipIt(String zipFile, String outputFolder) throws IOException {
 
-		byte[] buffer = new byte[1024];
+		final byte[] buffer = new byte[1024];
 
-		
-			ZipInputStream zis = new ZipInputStream(
+
+			final ZipInputStream zis = new ZipInputStream(
 					new FileInputStream(zipFile));
 
 			ZipEntry ze = zis.getNextEntry();
 
 			while (ze != null) {
 
-				String fileName = ze.getName();
-				File newFile = new File(outputFolder + File.separator + fileName);
+				final String fileName = ze.getName();
+				final File newFile = new File(outputFolder + File.separator + fileName);
 
 				progressString("Descompactando %s", newFile.getAbsoluteFile());
 
-				FileOutputStream fos = new FileOutputStream(newFile);
+				final FileOutputStream fos = new FileOutputStream(newFile);
 
 				int len;
 				while ((len = zis.read(buffer)) > 0) {
@@ -187,14 +200,14 @@ public class SoftwareUpdate extends JFrame implements Progress {
 			zis.closeEntry();
 			zis.close();
 	}
-	
+
     private static Version checkForNewVersion(Version currentVersion) {
         final String latestVersionStr = getLatestVersion();
         if (latestVersionStr == null) {
             return null;
         }
 
-        Version latestVersion = new Version(latestVersionStr);
+        final Version latestVersion = new Version(latestVersionStr);
 		final boolean newVersion = latestVersion.compareTo(currentVersion) > 0;
         if (newVersion) {
         	return latestVersion;
@@ -203,7 +216,7 @@ public class SoftwareUpdate extends JFrame implements Progress {
     }
 
     private static String getLatestVersion() {
-    	final String latestVersionPage = 
+    	final String latestVersionPage =
     			WebUtils.downloadFile(APROPRIATOR_RELEASES_LATEST);
     	if (latestVersionPage == null) {
     		return null;
@@ -217,9 +230,9 @@ public class SoftwareUpdate extends JFrame implements Progress {
         return latestVersionPage.substring(ini + 1, fim);
 
     }
-    
+
     public void setProgress(int value) {
     	progressBar.setValue(value);
     }
-    
+
 }

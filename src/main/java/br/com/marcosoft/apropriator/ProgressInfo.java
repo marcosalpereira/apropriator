@@ -8,6 +8,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -17,6 +19,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
@@ -30,6 +33,7 @@ import br.com.marcosoft.apropriator.model.DaySummary;
 import br.com.marcosoft.apropriator.model.ItemTrabalho;
 import br.com.marcosoft.apropriator.model.TaskSummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
+import br.com.marcosoft.apropriator.po.PageObject;
 import br.com.marcosoft.apropriator.util.AWTUtilitiesWrapper;
 import br.com.marcosoft.apropriator.util.MoveMouseListener;
 import br.com.marcosoft.apropriator.util.Util;
@@ -50,9 +54,10 @@ import br.com.marcosoft.apropriator.util.Util;
 /**
  *
  */
-public class ProgressInfo extends JFrame {
+public class ProgressInfo extends JFrame implements ActionListener {
 
-    private static final Dimension FULL_SIZE = new Dimension(751, 250);
+    private static final int SIZE_ANIMATION_DELAY = 15;
+	private static final Dimension FULL_SIZE = new Dimension(751, 250);
     private static final Dimension MIN_SIZE = new Dimension(751, 90);
 
 	/**
@@ -77,11 +82,16 @@ public class ProgressInfo extends JFrame {
 	private JPanel panBody;
 
 	private JPanel panTitle;
+	private final Timer timerAnimateSize;
+	private double stepX;
+	private double stepY;
+	private int stepsCountDown;
 
 	private static final Color BLUE_BACK_GROUND = new Color(58,71,106);
 
     /** Creates new form NewJPanel */
     public ProgressInfo() {
+    	timerAnimateSize = new Timer(SIZE_ANIMATION_DELAY, this);
         initComponents();
     }
 
@@ -313,7 +323,6 @@ public class ProgressInfo extends JFrame {
 
     public void setResumoApropriando(TaskWeeklySummary summary) {
     	panBody.setVisible(true);
-    	setSize(FULL_SIZE);
         if (this.infoMessage == null) {
             lblMessage.setVisible(false);
         } else {
@@ -327,6 +336,7 @@ public class ProgressInfo extends JFrame {
         txtContexto.setText(summary.getContexto());
         txtItemTrabalho.setText(summary.getItemTrabalho().toString());
         setTempo(TipoTempo.APROPRIANDO.ordinal() + 1, summary);
+        changeSize(FULL_SIZE);
     }
 
     public void setInfoFinalizando(TaskSummary summary) {
@@ -334,7 +344,7 @@ public class ProgressInfo extends JFrame {
   					+ summary.getTask().getItemTrabalho()
   					+ summary.getComentario());
   		panBody.setVisible(false);
-  		setSize(MIN_SIZE);
+  		changeSize(MIN_SIZE);
     }
 
     public void setTempo(TipoTempo tipoTempo, TaskWeeklySummary summary) {
@@ -364,6 +374,11 @@ public class ProgressInfo extends JFrame {
         }
         final ProgressInfo progressInfo = new ProgressInfo();
         progressInfo.setTitle("casa");
+        progressInfo.changeSize(FULL_SIZE);
+        PageObject.sleep(2000);
+        progressInfo.changeSize(MIN_SIZE);
+        PageObject.sleep(2000);
+        progressInfo.changeSize(FULL_SIZE);
 //        progressInfo.setTempo(TipoTempo.ANTES, tds);
 //        progressInfo.setResumoApropriando(tds);
 //        progressInfo.setTempo(TipoTempo.DEPOIS, tds.somar(tds));
@@ -374,6 +389,20 @@ public class ProgressInfo extends JFrame {
     public void setInfoMessage(String message) {
     	lblMessage.setText(message);
         lblMessage.setVisible(message != null);
+    }
+
+    public void changeSize(Dimension targetSize) {
+    	stepsCountDown = 10;
+    	stepX = (targetSize.width - getWidth()) / (double) stepsCountDown;
+    	stepY = (targetSize.height - getHeight()) / (double) stepsCountDown;
+    	timerAnimateSize.restart();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+    	if (stepsCountDown-- == 0) {
+    		timerAnimateSize.stop();
+    	}
+    	setSize((int) Math.round(getWidth() + stepX), (int) Math.round(getHeight() + stepY));
     }
 
 }

@@ -21,6 +21,7 @@ import br.com.marcosoft.apropriator.ProgressInfo.TipoTempo;
 import br.com.marcosoft.apropriator.model.ApropriationFile;
 import br.com.marcosoft.apropriator.model.ApropriationFile.Config;
 import br.com.marcosoft.apropriator.model.DaySummary;
+import br.com.marcosoft.apropriator.model.Task;
 import br.com.marcosoft.apropriator.model.TaskRecord;
 import br.com.marcosoft.apropriator.model.TaskSummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
@@ -57,7 +58,7 @@ public class Apropriator {
 	        apropriator.handleSoftwareUpdate(arguments);
 	        apropriator.doItForMePlease(arguments.getCsvFile());
         } catch (final Throwable e) {
-            JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!\n" + e.getClass().getName() + ":" + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!" + e.getClass().getName() + "\n" + e.getMessage());
             apropriator.gravarArquivoRetornoErro(e, arguments.getCsvFile());
             e.printStackTrace();
         } finally {
@@ -314,7 +315,7 @@ public class Apropriator {
     		}
     	}
 
-    	verificarFinalizarTarefas();
+    	verificarFinalizarTarefasAtividades();
 
     	progressInfo.dispose();
 
@@ -331,6 +332,10 @@ public class Apropriator {
     	try {
             final RastreamentoHorasPage apropriationPage = gotoApropriationPage(summaryApropriando);
             progressInfo.setResumoApropriando(summaryApropriando);
+
+            if (apropriationPage.isTarefaAberta()) {
+            	apropriationPage.iniciarTarefa();
+            }
 
             final Date dataInicio = summaryApropriando.getDataInicio();
 
@@ -400,28 +405,55 @@ public class Apropriator {
     }
 
 
-    private void verificarFinalizarTarefas() {
-        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
-        final Collection<TaskSummary> summaryFinishedTasks = tasksHandler.getResumoTarefasFinalizadas();
+    private void verificarFinalizarTarefasAtividades() {
+        verificarFinalizarAtividade();
+        verificarFinalizarTarefa();
+    }
+
+	private void verificarFinalizarAtividade() {
+		final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
+        final Collection<TaskSummary> summaryFinishedTasks = tasksHandler.getResumoAtividadesFinalizadas();
         for (final TaskSummary summary : summaryFinishedTasks) {
         	progressInfo.setInfoFinalizando(summary);
-        	if (!finalizarTarefa(summary)) {
+        	if (!finalizarAtividade(summary)) {
         		break;
         	}
         }
-    }
+	}
 
-	private boolean finalizarTarefa(final TaskSummary summary) {
+	private void verificarFinalizarTarefa() {
+		final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
+		final Collection<TaskSummary> summaryFinishedTasks = tasksHandler.getResumoTarefasFinalizadas();
+		for (final TaskSummary summary : summaryFinishedTasks) {
+			progressInfo.setInfoFinalizando(summary);
+			if (!finalizarTarefa(summary)) {
+				break;
+			}
+		}
+	}
+
+	private boolean finalizarAtividade(final TaskSummary summary) {
 		final Alm alm = new Alm();
 		try {
-			final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(summary);
-			visaoGeralPage.incluirComentarioFinalizacaoTarefa(summary);
+			final Task task = summary.getTask();
+			final Collection<Integer> idsAtividades = summary.getIdsAtividades();
+			if (idsAtividades.isEmpty()) {
+				final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(
+						task.getContexto(), task.getItemTrabalho().getId());
+				visaoGeralPage.incluirComentarioFinalizacaoTarefa(summary);
+			} else {
+				for (final Integer id : idsAtividades) {
+					final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(
+							task.getContexto(), id);
+					visaoGeralPage.finalizarTarefa(summary);
+				}
+			}
 			return true;
 
         } catch (final RuntimeException e) {
             final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
             if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
-                return finalizarTarefa(summary);
+                return finalizarAtividade(summary);
 
             } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
                 return true;
@@ -433,10 +465,35 @@ public class Apropriator {
         }
 	}
 
+	private boolean finalizarTarefa(final TaskSummary summary) {
+		final Alm alm = new Alm();
+		try {
+			final Task task = summary.getTask();
+			final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(
+					task.getContexto(), task.getItemTrabalho().getId());
+			visaoGeralPage.finalizarTarefa(summary);
+			return true;
+
+		} catch (final RuntimeException e) {
+			final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
+			if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
+				return finalizarAtividade(summary);
+
+			} else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
+				return true;
+
+			} else {
+				return false;
+
+			}
+		}
+	}
+
     private RastreamentoHorasPage gotoApropriationPage(TaskWeeklySummary summary) {
         final Alm alm = new Alm();
         try {
-            return alm.gotoApropriationPage(summary);
+            return alm.gotoApropriationPage(
+            		summary.getContexto(), summary.getItemTrabalho().getId());
         } catch (final NotLoggedInException e) {
             doLogin();
             return gotoApropriationPage(summary);

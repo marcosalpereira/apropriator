@@ -7,6 +7,7 @@ import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 import br.com.marcosoft.apropriator.model.DaySummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
@@ -122,5 +123,17 @@ public class RastreamentoHorasPage extends PageObject {
         }
         click(By.xpath("//span[@id='Timecode_addButton']/span[2]/a/span[2]"));
     }
+
+	public boolean isTarefaAberta() {
+    	final WebElement status = getStatus();
+    	return status != null &&
+    			"Aberta".equalsIgnoreCase(status.getText());
+	}
+
+	public void iniciarTarefa() {
+    	final Select select = new Select(getStatus());
+    	select.selectByValue("com.ibm.team.workitem.taskWorkflow.action.startWorking");
+    	salvarAlteracoes();
+	}
 
 }
