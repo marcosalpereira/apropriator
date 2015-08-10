@@ -33,7 +33,6 @@ import br.com.marcosoft.apropriator.model.DaySummary;
 import br.com.marcosoft.apropriator.model.ItemTrabalho;
 import br.com.marcosoft.apropriator.model.TaskSummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
-import br.com.marcosoft.apropriator.po.PageObject;
 import br.com.marcosoft.apropriator.util.AWTUtilitiesWrapper;
 import br.com.marcosoft.apropriator.util.MoveMouseListener;
 import br.com.marcosoft.apropriator.util.Util;
@@ -375,9 +374,7 @@ public class ProgressInfo extends JFrame implements ActionListener {
         final ProgressInfo progressInfo = new ProgressInfo();
         progressInfo.setTitle("casa");
         progressInfo.changeSize(FULL_SIZE);
-        PageObject.sleep(2000);
-        progressInfo.changeSize(MIN_SIZE);
-        PageObject.sleep(2000);
+        Util.sleep(1000);
         progressInfo.changeSize(FULL_SIZE);
 //        progressInfo.setTempo(TipoTempo.ANTES, tds);
 //        progressInfo.setResumoApropriando(tds);
@@ -392,11 +389,19 @@ public class ProgressInfo extends JFrame implements ActionListener {
     }
 
     public void changeSize(Dimension targetSize) {
-    	stepsCountDown = 10;
+    	while(timerAnimateSize.isRunning()) {Util.sleep(200);};
+    	animateChangeSize(new Dimension(getWidth(), 10));
+
+    	while(timerAnimateSize.isRunning()) {Util.sleep(200);};
+    	animateChangeSize(targetSize);
+    }
+
+	private void animateChangeSize(Dimension targetSize) {
+		stepsCountDown = 20;
+		timerAnimateSize.restart();
     	stepX = (targetSize.width - getWidth()) / (double) stepsCountDown;
     	stepY = (targetSize.height - getHeight()) / (double) stepsCountDown;
-    	timerAnimateSize.restart();
-    }
+	}
 
     public void actionPerformed(ActionEvent e) {
     	if (stepsCountDown-- == 0) {

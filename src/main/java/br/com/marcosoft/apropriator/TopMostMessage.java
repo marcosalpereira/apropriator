@@ -120,7 +120,7 @@ public class TopMostMessage extends JDialog {
     }
 
     private void btnSelecionarActionPerformed(
-        final ActionEvent evt) {
+        @SuppressWarnings("unused") final ActionEvent evt) {
         dispose();
     }
 

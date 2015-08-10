@@ -17,13 +17,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
-
-import org.apache.commons.io.FileUtils;
 
 import br.com.marcosoft.apropriator.util.WebUtils.Progress;
 
@@ -117,7 +114,6 @@ public class SoftwareUpdate extends JFrame implements Progress {
     }
 
     public static void main(String[] args) throws IOException {
-    	showReleaseNotes("/home/54706424372/dev/java/src/apropriator/src/main/config");
     	//update(new Version("1.0"), "/tmp/a");
     }
 
@@ -148,22 +144,11 @@ public class SoftwareUpdate extends JFrame implements Progress {
 	    	WebUtils.downloadFile(url, out, this);
 
 	    	unZipIt(zipFile, targetFolder);
-
-	    	showReleaseNotes(targetFolder);
 		}
 
 	}
 
-	public static void showReleaseNotes(String root) {
-		final File file = new File(root + File.separator + "releaseNotes.txt");
-		if (file.canRead()) {
-			try {
-				final String conteudo = FileUtils.readFileToString(file, "UTF-8");
-				JOptionPane.showMessageDialog(null, conteudo, "Release Notes", JOptionPane.INFORMATION_MESSAGE);
-			} catch (final IOException e) {
-			}
-		}
-	}
+
 
 	private void progressString(String template, Object... objects) {
 		progressBar.setString(String.format(template, objects));

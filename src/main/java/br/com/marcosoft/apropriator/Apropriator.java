@@ -1,6 +1,7 @@
 package br.com.marcosoft.apropriator;
 
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 import br.com.marcosoft.apropriator.ProgressInfo.TipoTempo;
 import br.com.marcosoft.apropriator.model.ApropriationFile;
@@ -58,13 +62,35 @@ public class Apropriator {
 	        apropriator.handleSoftwareUpdate(arguments);
 	        apropriator.doItForMePlease(arguments.getCsvFile());
         } catch (final Throwable e) {
-            JOptionPane.showMessageDialog(null, "Um erro inesperado ocorreu!" + e.getClass().getName() + "\n" + e.getMessage());
+            showMessage("Um erro inesperado ocorreu!" + e.getClass().getName() + "\n" + e.getMessage());
             apropriator.gravarArquivoRetornoErro(e, arguments.getCsvFile());
             e.printStackTrace();
         } finally {
         	apropriator.progressInfo.dispose();
         }
     }
+
+	private void showReleaseNotes() {
+		final String lastVersion = this.applicantionProperties.getProperty("last-version");
+		if (appVersion.get().equals(lastVersion)) {
+			return;
+		}
+		this.applicantionProperties.setProperty("last-version", appVersion.get());
+
+		try {
+			final InputStream stream = getClass()
+					.getClassLoader().getResourceAsStream("releaseNotes.txt");
+			final List<?> lines = IOUtils.readLines(stream, "UTF-8");
+			final String conteudo = StringUtils.join(lines, '\n');
+			showMessage(conteudo);
+		} catch (final IOException e) {
+		}
+	}
+
+	private static void showMessage(final String conteudo) {
+		final Component c = new JScrollPane(new JTextArea(conteudo, 10, 70));
+		JOptionPane.showMessageDialog(null, c, "Release Notes", JOptionPane.INFORMATION_MESSAGE);
+	}
 
 	private void handleSoftwareUpdate(Arguments arguments) {
 		final File csvFile = arguments.getCsvFile();
@@ -73,6 +99,7 @@ public class Apropriator {
 			SoftwareUpdate.update(appVersion, targetFolder);
 			System.exit(0);
 		} else {
+			showReleaseNotes();
 			final String jar = String.format("%s%salm-apropriator-%s.jar", targetFolder, File.separator, appVersion);
 			Exec.jar(jar, csvFile.getPath(), "update");
 		}
@@ -154,8 +181,7 @@ public class Apropriator {
         try {
             out = new PrintWriter(fileName, "UTF-8");
         } catch (final IOException e) {
-            JOptionPane.showMessageDialog(null, "Nao consegui gravar arquivo retorno!\n"
-                + e.getMessage());
+            showMessage("Nao consegui gravar arquivo retorno!\n" + e.getMessage());
             return;
         }
         out.println("err|" + erro.getMessage());
@@ -170,8 +196,7 @@ public class Apropriator {
         try {
             out = new PrintWriter(fileName, "UTF-8");
         } catch (final IOException e) {
-            JOptionPane.showMessageDialog(null, "Nao consegui gravar arquivo retorno!\n"
-                + e.getMessage());
+            showMessage("Nao consegui gravar arquivo retorno!\n" + e.getMessage());
             return;
         }
 
