@@ -125,13 +125,14 @@ public class RastreamentoHorasPage extends PageObject {
     }
 
 	public boolean isTarefaAberta() {
-    	final WebElement status = getStatus();
-    	return status != null &&
-    			"Aberta".equalsIgnoreCase(status.getText());
+    	final Select status = getStatus();
+    	final WebElement option = status.getFirstSelectedOption();
+    	return option != null &&
+    			"Aberta".equalsIgnoreCase(option.getText());
 	}
 
 	public void iniciarTarefa() {
-    	final Select select = new Select(getStatus());
+    	final Select select = getStatus();
     	select.selectByValue("com.ibm.team.workitem.taskWorkflow.action.startWorking");
     	salvarAlteracoes();
 	}

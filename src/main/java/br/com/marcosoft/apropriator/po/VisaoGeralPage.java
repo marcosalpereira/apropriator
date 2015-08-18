@@ -36,7 +36,7 @@ public class VisaoGeralPage extends PageObject {
 
 	public void finalizarTarefa(TaskSummary summary) {
     	boolean encontrou = false;
-    	final Select select = new Select(getStatus());
+    	final Select select = getStatus();
     	final List<WebElement> options = select.getOptions();
     	for (final WebElement option : options) {
 			if ("Finalizar".equalsIgnoreCase(option.getText())) {

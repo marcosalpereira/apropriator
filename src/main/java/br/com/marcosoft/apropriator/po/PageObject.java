@@ -5,6 +5,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 import br.com.marcosoft.apropriator.Condition;
 import br.com.marcosoft.apropriator.WaitWindow;
@@ -61,9 +62,10 @@ public class PageObject {
             .click();
     }
 
-	public WebElement getStatus() {
-		return FindElement.findElement(By.className("Select"),
+	public Select getStatus() {
+		final WebElement webElement = FindElement.findElement(By.className("Select"),
 				FindElement.isEnabled("aria-label", "Status"));
+		return new Select(webElement);
 	}
 
     public void salvarAlteracoes() {
