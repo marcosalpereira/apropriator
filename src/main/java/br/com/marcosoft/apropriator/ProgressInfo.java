@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,6 +19,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
@@ -36,6 +38,7 @@ import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
 import br.com.marcosoft.apropriator.util.AWTUtilitiesWrapper;
 import br.com.marcosoft.apropriator.util.MoveMouseListener;
 import br.com.marcosoft.apropriator.util.Util;
+import br.com.marcosoft.apropriator.util.WebUtils.Progress;
 
 
 /**
@@ -53,7 +56,7 @@ import br.com.marcosoft.apropriator.util.Util;
 /**
  *
  */
-public class ProgressInfo extends JFrame implements ActionListener {
+public class ProgressInfo extends JFrame implements ActionListener, Progress {
 
     private static final int SIZE_ANIMATION_DELAY = 15;
 	private static final Dimension FULL_SIZE = new Dimension(751, 250);
@@ -85,6 +88,7 @@ public class ProgressInfo extends JFrame implements ActionListener {
 	private double stepX;
 	private double stepY;
 	private int stepsCountDown;
+	private JProgressBar progressBar;
 
 	private static final Color BLUE_BACK_GROUND = new Color(58,71,106);
 
@@ -280,8 +284,8 @@ public class ProgressInfo extends JFrame implements ActionListener {
 	private JPanel criarPanelTitulo() {
 		final JPanel panTitle = new JPanel();
 		final GridBagLayout panTitleLayout = new GridBagLayout();
-		panTitleLayout.rowWeights = new double[] {0.0, 0.1};
-		panTitleLayout.rowHeights = new int[] {0, 7};
+		panTitleLayout.rowWeights = new double[] {0.0, 0.1, 0.1};
+		panTitleLayout.rowHeights = new int[] {0, 1, 1};
 		panTitleLayout.columnWeights = new double[] {0.1};
 		panTitleLayout.columnWidths = new int[] {7};
 		panTitle.setLayout(panTitleLayout);
@@ -306,6 +310,18 @@ public class ProgressInfo extends JFrame implements ActionListener {
 			lblMessage.setVisible(false);
 			lblMessage.setForeground(new java.awt.Color(255, 255, 255));
 			lblMessage.setFont(new java.awt.Font("Arial",3,18));
+		}
+
+		{
+            progressBar = new JProgressBar(0, 100);
+            panTitle.add(progressBar, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+            progressBar.setBackground(java.awt.SystemColor.text);
+            progressBar.setOpaque(true);
+            progressBar.setSize(395, 20);
+            progressBar.setPreferredSize(new java.awt.Dimension(0, 20));
+            progressBar.setStringPainted(true);
+            progressBar.setFont(new java.awt.Font("Dialog",Font.BOLD,16));
+
 		}
 		return panTitle;
 	}
@@ -372,10 +388,13 @@ public class ProgressInfo extends JFrame implements ActionListener {
             }
         }
         final ProgressInfo progressInfo = new ProgressInfo();
-        progressInfo.setTitle("casa");
-        progressInfo.changeSize(FULL_SIZE);
-        Util.sleep(1000);
-        progressInfo.changeSize(FULL_SIZE);
+        progressInfo.setTitle("Atualizando ...");
+        progressInfo.changeSize(MIN_SIZE);
+        for (int i=1; i<10; i++) {
+        	progressInfo.setProgress("fazendo " + i);
+        	progressInfo.setProgress(i);
+        Util.sleep(200);
+        }
 //        progressInfo.setTempo(TipoTempo.ANTES, tds);
 //        progressInfo.setResumoApropriando(tds);
 //        progressInfo.setTempo(TipoTempo.DEPOIS, tds.somar(tds));
@@ -408,6 +427,21 @@ public class ProgressInfo extends JFrame implements ActionListener {
     		timerAnimateSize.stop();
     	}
     	setSize((int) Math.round(getWidth() + stepX), (int) Math.round(getHeight() + stepY));
+    }
+
+    public void setProgress(String progress) {
+    	lblMessage.setVisible(true);
+    	lblMessage.setText(progress);
+    }
+
+    public void setProgress(int value) {
+    	progressBar.setVisible(true);
+    	progressBar.setValue(value);
+    }
+
+    public void finished() {
+    	progressBar.setVisible(false);
+    	lblMessage.setVisible(false);
     }
 
 }

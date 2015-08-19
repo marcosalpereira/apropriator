@@ -5,16 +5,15 @@ import java.util.Arrays;
 
 public class Arguments {
 	private File csvFile;
-	private boolean update;
-	
+
 	public static Arguments parse(String args[]) {
-		Arguments arguments = new Arguments();
-		
+		final Arguments arguments = new Arguments();
+
 		System.out.println("Arguments:" + Arrays.asList(args));
-		
+
 		String nomeCsv = null;
 	    if (args.length > 0) {
-	    	nomeCsv = args[0];	    	
+	    	nomeCsv = args[0];
 	    }
 		if (nomeCsv == null) {
 	    	throw new IllegalStateException("Arquivo CSV não informado!");
@@ -23,15 +22,9 @@ public class Arguments {
 	    if (!file.canRead()) {
 	    	throw new IllegalStateException("Arquivo " + nomeCsv + " não pode ser lido!");
 	    }
-	    
-	    if (args.length > 1) {
-	    	if ("update".equalsIgnoreCase(args[1].trim())) {
-	    		arguments.setUpdate(true);
-	    	} 
-	    }
 	    arguments.setCsvFile(file);
 
-	    return arguments;		
+	    return arguments;
 	}
 
 	public File getCsvFile() {
@@ -42,14 +35,5 @@ public class Arguments {
 		this.csvFile = csvFile;
 	}
 
-	public boolean isUpdate() {
-		return update;
-	}
 
-	public void setUpdate(boolean update) {
-		this.update = update;
-	}
-	
-	
-	
 }

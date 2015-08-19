@@ -1,6 +1,7 @@
 package br.com.marcosoft.apropriator.util;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class Exec {
 
@@ -12,8 +13,9 @@ public class Exec {
 			cmdArray[2] = jarFile;
 			System.arraycopy(args, 0, cmdArray, 3, args.length);
 
-			final Process proc = Runtime.getRuntime().exec(cmdArray);
-			System.out.println(proc);
+			System.out.println(Arrays.asList(cmdArray));
+
+			Runtime.getRuntime().exec(cmdArray);
 
 //			final BufferedReader stdError = new BufferedReader(
 //					new InputStreamReader(proc.getErrorStream()));

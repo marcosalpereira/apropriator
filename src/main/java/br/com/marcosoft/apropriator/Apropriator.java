@@ -58,7 +58,6 @@ public class Apropriator {
     	final Apropriator apropriator = new Apropriator();
     	final Arguments arguments = Arguments.parse(args);
     	try {
-	    	setLookAndFeel();
 	        apropriator.handleSoftwareUpdate(arguments);
 	        apropriator.doItForMePlease(arguments.getCsvFile());
         } catch (final Throwable e) {
@@ -95,13 +94,15 @@ public class Apropriator {
 	private void handleSoftwareUpdate(Arguments arguments) {
 		final File csvFile = arguments.getCsvFile();
 		final String targetFolder = csvFile.getParent();
-		if (arguments.isUpdate()) {
-			SoftwareUpdate.update(appVersion, targetFolder);
+		progressInfo.setTitle("Atualizator - " + appVersion);
+		final Version newVersion = SoftwareUpdate.update(appVersion, targetFolder, progressInfo);
+		progressInfo.setTitle("Apropriator - " + appVersion);
+		if (newVersion != null) {
+			final String jar = String.format("%s%salm-apropriator-%s.jar", targetFolder, File.separator, newVersion);
+			Exec.jar(jar, csvFile.getPath());
 			System.exit(0);
 		} else {
 			showReleaseNotes();
-			final String jar = String.format("%s%salm-apropriator-%s.jar", targetFolder, File.separator, appVersion);
-			Exec.jar(jar, csvFile.getPath(), "update");
 		}
 	}
 

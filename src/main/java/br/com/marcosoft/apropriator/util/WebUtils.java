@@ -29,60 +29,56 @@ public class WebUtils {
     }
 
     public static void main(String[] args) {
-    	String string = 
-    			downloadFile("https://github.com/marcosalpereira/apropriator/releases/latest");
-    	
-        final String search = "/marcosalpereira/apropriator/releases/download/";
-        final int ini = string.indexOf(search) + search.length();
-        final int fim = string.indexOf('/', ini);
-        System.out.println(string.substring(ini + 1, fim)); 
-//        System.out.println(encode("SUPDE-Atividade Não Software"));
     }
-    
+
     public interface Progress {
+    	void setProgress(String progress);
     	void setProgress(int value);
+		void finished();
     }
-    
-    public static String downloadFile(String fileUrl) {
-    	ByteArrayOutputStream out = new ByteArrayOutputStream();
-    	downloadFile(fileUrl, out, null);
+
+    public static String downloadFile(String fileUrl, Progress progress) {
+    	final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    	downloadFile(fileUrl, out, progress);
     	return new String(out.toByteArray());
     }
-    
+
     public static void downloadFile(String fileUrl, OutputStream outputStream, Progress progress) {
     	try {
-    		
+
     		final URL url = new URL(fileUrl);
     		final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-    		
+
     		urlConnection.connect();
-    		
+
     		final InputStream inputStream = url.openStream();
-    		
-            byte[] buffer = new byte[BUFFER_SIZE];
+
+            final byte[] buffer = new byte[BUFFER_SIZE];
             int bytesRead = -1;
             long totalBytesRead = 0;
             int percentCompleted = 0;
-            long fileSize = urlConnection.getContentLength();
- 
+            final long fileSize = urlConnection.getContentLength();
+
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
-                if (progress != null) {
-                	totalBytesRead += bytesRead;
-                	percentCompleted = (int) (totalBytesRead * 100 / fileSize);
-                	progress.setProgress(percentCompleted);
-                }
+
+                totalBytesRead += bytesRead;
+                percentCompleted = (int) (totalBytesRead * 100 / fileSize);
+                progress.setProgress(percentCompleted);
+
             }
             outputStream.close();
             inputStream.close();
             urlConnection.disconnect();
-    		
+
     	} catch (final MalformedURLException e) {
     		e.printStackTrace();
     	} catch (final IOException e) {
     		e.printStackTrace();
+    	} finally {
+    		progress.finished();
     	}
-    	
+
     }
 
     public static String encode(String url) {
