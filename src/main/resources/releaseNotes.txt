@@ -1,3 +1,9 @@
+Versão 2.0
+    - Alteração no código das macros para encontrar a versão mais nova do jar.
+    - Finalizar um item de backlog
+    - Avisar mensagens importantes
+    
+    
 Versão 1.9
     - Iniciar uma tarefa/defeito se ainda nao estiver em andamento
     

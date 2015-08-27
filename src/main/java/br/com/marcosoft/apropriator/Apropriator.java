@@ -2,6 +2,7 @@ package br.com.marcosoft.apropriator;
 
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,7 @@ import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.UIManager;
+import javax.swing.JTextPane;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -61,7 +62,7 @@ public class Apropriator {
 	        apropriator.handleSoftwareUpdate(arguments);
 	        apropriator.doItForMePlease(arguments.getCsvFile());
         } catch (final Throwable e) {
-            showMessage("Um erro inesperado ocorreu!" + e.getClass().getName() + "\n" + e.getMessage());
+            showInfoMessage("Um erro inesperado ocorreu!" + e.getClass().getName() + "\n" + e.getMessage());
             apropriator.gravarArquivoRetornoErro(e, arguments.getCsvFile());
             e.printStackTrace();
         } finally {
@@ -70,23 +71,54 @@ public class Apropriator {
     }
 
 	private void showReleaseNotes() {
-		final String lastVersion = this.applicantionProperties.getProperty("last-version");
+		final String releaseNotesKey = "last-version";
+		final String lastVersion = this.applicantionProperties.getProperty(releaseNotesKey);
 		if (appVersion.get().equals(lastVersion)) {
 			return;
 		}
-		this.applicantionProperties.setProperty("last-version", appVersion.get());
+		this.applicantionProperties.setProperty(releaseNotesKey, appVersion.get());
 
 		try {
 			final InputStream stream = getClass()
 					.getClassLoader().getResourceAsStream("releaseNotes.txt");
 			final List<?> lines = IOUtils.readLines(stream, "UTF-8");
 			final String conteudo = StringUtils.join(lines, '\n');
-			showMessage(conteudo);
+			showInfoMessage(conteudo);
 		} catch (final IOException e) {
 		}
 	}
 
-	private static void showMessage(final String conteudo) {
+	private void showWarnMessage() {
+		final String warnMessageKey = "last-version-warn-message";
+		final String lastVersion = this.applicantionProperties.getProperty(warnMessageKey);
+		if (appVersion.get().equals(lastVersion)) {
+			return;
+		}
+		this.applicantionProperties.setProperty(warnMessageKey, appVersion.get());
+
+		try {
+			final String fileName = String.format("mensagemImportante-%s.txt", appVersion.get());
+			final InputStream stream = getClass()
+					.getClassLoader().getResourceAsStream(fileName);
+			if (stream != null) {
+				final List<?> lines = IOUtils.readLines(stream, "UTF-8");
+				final String conteudo = StringUtils.join(lines, "");
+				showWarnMessage(conteudo);
+			}
+		} catch (final IOException e) {
+		}
+	}
+
+	private static void showWarnMessage(final String conteudo) {
+		final JTextPane textArea = new JTextPane();
+		textArea.setContentType("text/html");
+		textArea.setText(conteudo);
+		textArea.setPreferredSize(new Dimension(650, 300));
+		final Component c = new JScrollPane(textArea);
+		JOptionPane.showMessageDialog(null, c, "Mensagem Importante", JOptionPane.WARNING_MESSAGE);
+	}
+
+	private static void showInfoMessage(final String conteudo) {
 		final Component c = new JScrollPane(new JTextArea(conteudo, 10, 70));
 		JOptionPane.showMessageDialog(null, c, "Release Notes", JOptionPane.INFORMATION_MESSAGE);
 	}
@@ -103,6 +135,7 @@ public class Apropriator {
 			System.exit(0);
 		} else {
 			showReleaseNotes();
+			showWarnMessage();
 		}
 	}
 
@@ -124,15 +157,6 @@ public class Apropriator {
             }
         }
         return ret;
-    }
-
-
-	private static void setLookAndFeel() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private ApropriationFile apropriationFile;
@@ -182,7 +206,7 @@ public class Apropriator {
         try {
             out = new PrintWriter(fileName, "UTF-8");
         } catch (final IOException e) {
-            showMessage("Nao consegui gravar arquivo retorno!\n" + e.getMessage());
+            showInfoMessage("Nao consegui gravar arquivo retorno!\n" + e.getMessage());
             return;
         }
         out.println("err|" + erro.getMessage());
@@ -197,7 +221,7 @@ public class Apropriator {
         try {
             out = new PrintWriter(fileName, "UTF-8");
         } catch (final IOException e) {
-            showMessage("Nao consegui gravar arquivo retorno!\n" + e.getMessage());
+            showInfoMessage("Nao consegui gravar arquivo retorno!\n" + e.getMessage());
             return;
         }
 

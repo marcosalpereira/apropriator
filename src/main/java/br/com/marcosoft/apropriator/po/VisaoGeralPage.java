@@ -39,7 +39,8 @@ public class VisaoGeralPage extends PageObject {
     	final Select select = getStatus();
     	final List<WebElement> options = select.getOptions();
     	for (final WebElement option : options) {
-			if ("Finalizar".equalsIgnoreCase(option.getText())) {
+			final String text = option.getText().toLowerCase();
+			if ("finalizar".equals(text) || "concluir".equals(text)) {
 				option.click();
 				encontrou = true;
 			}
