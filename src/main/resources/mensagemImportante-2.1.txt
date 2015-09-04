@@ -1,0 +1,35 @@
+<html>
+
+<h2>
+ATENÇÃO - Atualização para adicionar um botão para abrir itens de trabalho diretamente da planilha</b></u>
+</h2>
+
+<p>Para atualizar é bem fácil:</p>
+<ol>
+	<li> Use a Opção do Menu do BrOffice: Ferramentas -> Macros -> Organizar macros -> LibreOffice Basic</li>
+	<li> Na caixa de diálogos "Macros do LibreOffice Basic": 
+	   No painel "Macro de" selecione o item da árvore "apropriacao.ods > Standard > Module1"
+	   Clique no botão editar.</li>
+	<li> Substitua todo o conteúdo mostrado no editor de macros pelo conteúdo do arquivo
+		 "macro.oo.txt" que fica na mesma pasta da planilha de apropriação.</li>
+	<li> pronto! </li>
+</ol>
+
+<p>Para configurar um botão na barra de ferramentas da planilha de apropriação para 
+abrir um item de trabalho especificado na columa "Item de Trabalho" ou "Comentário" faça:</p>
+<ol>
+	<li>Use a Opção do Menu do BrOffice: Ferramentas -> Personalizar</li>
+	<li>Na aba de "Barra de Ferramentas" Selecione no campo "Barra de Ferramentas" selecione "Apropriator"</li>
+	<li>Use o botão "Adicionar..."</li>
+	<li>No Dialogo "Adicionar Comandos" selecione na lista de categorias: "Macros do LibreOffice -> apropriacao.ods -> Standard -> Module1</li>
+	<li>Na lista "Comandos" selecione "abrir" e clique no botão adicionar. Se desejar pode customizar o nome do botão como desejado</li>
+	<li>Use o botão "OK"</li>
+</ol>
+
+<p>Para usar o botão recém criado, selecione uma célula da coluna "Item de Trabalho" ou "Comentário" e use o botão recém criado
+para abrir no browser o item com o id especificado na célula</p>  
+
+
+<p>Att Apropriator</p>
+
+</html>

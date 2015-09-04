@@ -1,3 +1,6 @@
+Versão 2.1
+    - Mudança apenas nas macros para possibilitar abrir um item de trabalho apartir da planilha
+    
 Versão 2.0
     - Alteração no código das macros para encontrar a versão mais nova do jar.
     - Finalizar um item de backlog

@@ -14,8 +14,9 @@
 '1.4 - Coluna Semana
 '1.5 - Somente ALM
 '1.6 - Tratamento melhorado da comparacao de versoes
+'1.7 - Opcao para abrir item de trabalho
 
-Const VERSION = "1.6"
+Const VERSION = "1.7"
 
 Const COL_REG = 0
 Const COL_DATE = 1
@@ -103,7 +104,6 @@ Sub writeTaskCsvFile(sFilename as String)
   close #iFileNo
   
 End Sub
-
 
 'Duplicar a atividade selecionada
 sub duplicate
@@ -405,6 +405,53 @@ Sub execImportApp(exportedFile as String)
     waitForReturnFile inputFileName
     importReturnFile inputFileName
     
+End Sub
+
+Sub abrir()
+    dim str as String
+    dim curPos 
+    dim arr
+    
+    curPos = ThisComponent.CurrentSelection.CellAddress 
+    str = getText(curPos.column, curPos.row)
+    
+    if curPos.column = COL_WORK_ITEM Then
+    	arr = Split(str, ";")
+    Elseif curPos.column = COL_COMENTARIO Then
+    	arr = Split(str, "-")    
+    Else 
+    	MsgBox "Selecione a Coluna de 'Item de Trabalho' ou 'Comentário'"
+    	exit sub
+    End if
+
+	Dim item as String
+	item = arr(0)
+	Dim id as Integer
+	
+	if Not IsNumeric(item) Then
+		msgbox "Error obtendo id do Item de Trabalho" & item
+		exit sub
+	End if
+	
+	Dim url as String
+	url = montarUrl(getText(COL_CONTEXTO, curPos.row), item)
+	
+	Dim sys as Object
+    sys = CreateUnoService("com.sun.star.system.SystemShellExecute")
+    sys.execute(getBrowser(), url, 0)
+	
+End Sub
+
+Sub getBrowser() as String
+	getBrowser = "firefox"
+End Sub
+
+Sub montarUrl(ctx as String, id as String) as String
+montarUrl = "https://alm.serpro/ccm/web/projects/" & webEncode(ctx) & "#action=com.ibm.team.workitem.viewWorkItem&id=" & id
+End Sub
+
+Sub webEncode(str as String) as String
+	webEncode = str
 End Sub
 
 Sub getJarFile(sCurrDir as String) as String
