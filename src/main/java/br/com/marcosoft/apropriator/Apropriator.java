@@ -234,7 +234,11 @@ public class Apropriator {
             }
         }
 
-        out.println();
+        //Modificar lista de validacao da coluna finalizar
+        final int colunaFinalizar = 2;
+        out.println(String.format("alv|%d|Atividade", colunaFinalizar));
+        out.println(String.format("alv|%d|Tarefa", colunaFinalizar));
+        out.println(String.format("alv|%d|Atividade/Tarefa", colunaFinalizar));
 
         out.close();
 

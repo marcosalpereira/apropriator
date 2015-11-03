@@ -314,13 +314,11 @@ public class ProgressInfo extends JFrame implements ActionListener, Progress {
 
 		{
             progressBar = new JProgressBar(0, 100);
-            panTitle.add(progressBar, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+            panTitle.add(progressBar, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 0, 0, 0), 0, 0));
             progressBar.setBackground(java.awt.SystemColor.text);
             progressBar.setOpaque(true);
-            progressBar.setSize(395, 20);
-            progressBar.setPreferredSize(new java.awt.Dimension(0, 20));
             progressBar.setStringPainted(true);
-            progressBar.setFont(new java.awt.Font("Dialog",Font.BOLD,16));
+            progressBar.setFont(new java.awt.Font("Dialog", Font.BOLD, 12));
 
 		}
 		return panTitle;
@@ -350,11 +348,20 @@ public class ProgressInfo extends JFrame implements ActionListener, Progress {
         );
         txtContexto.setText(summary.getContexto());
         txtItemTrabalho.setText(summary.getItemTrabalho().toString());
+        limparTempos();
         setTempo(TipoTempo.APROPRIANDO.ordinal() + 1, summary);
         changeSize(FULL_SIZE);
     }
 
-    public void setInfoFinalizando(TaskSummary summary) {
+    private void limparTempos() {
+		for (int row=1; row<=3; row++) {
+			for (int col=1; col<=7; col++) {
+				tblLinhaTempo.setValueAt("", row, col);
+			}
+		}
+	}
+
+	public void setInfoFinalizando(TaskSummary summary) {
   		setInfoMessage("Finalizando Tarefa:"
   					+ summary.getTask().getItemTrabalho()
   					+ summary.getComentario());
@@ -390,16 +397,12 @@ public class ProgressInfo extends JFrame implements ActionListener, Progress {
         final ProgressInfo progressInfo = new ProgressInfo();
         progressInfo.setTitle("Atualizando ...");
         progressInfo.changeSize(MIN_SIZE);
-        for (int i=1; i<10; i++) {
-        	progressInfo.setProgress("fazendo " + i);
-        	progressInfo.setProgress(i);
-        Util.sleep(200);
-        }
-//        progressInfo.setTempo(TipoTempo.ANTES, tds);
-//        progressInfo.setResumoApropriando(tds);
-//        progressInfo.setTempo(TipoTempo.DEPOIS, tds.somar(tds));
-//        progressInfo.setInfoMessage("foo");
-//        progressInfo.setInfoFinalizando(new TaskSummary(new Task("ctx", new ItemTrabalho(1, "foo"), "task")));
+        progressInfo.setTempo(TipoTempo.ANTES, tds);
+        progressInfo.setResumoApropriando(tds);
+        progressInfo.setTempo(TipoTempo.DEPOIS, tds.somar(tds));
+        progressInfo.setInfoMessage("foo");
+        Util.sleep(2000);
+        progressInfo.limparTempos();
     }
 
     public void setInfoMessage(String message) {
