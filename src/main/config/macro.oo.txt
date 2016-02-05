@@ -15,8 +15,10 @@
 '1.5 - Somente ALM
 '1.6 - Tratamento melhorado da comparacao de versoes
 '1.7 - Opcao para abrir item de trabalho
+'1.8 - Abrir varios itens de trabalho no browser
 
-Const VERSION = "1.7"
+Const VERSION = "1.8"
+
 
 Const COL_REG = 0
 Const COL_DATE = 1
@@ -408,38 +410,38 @@ Sub execImportApp(exportedFile as String)
 End Sub
 
 Sub abrir()
-    dim str as String
+    dim cellText as String
     dim curPos 
-    dim arr
-    
+    dim aItems
+    dim sItems as String
+        
     curPos = ThisComponent.CurrentSelection.CellAddress 
-    str = getText(curPos.column, curPos.row)
+    cellText = getText(curPos.column, curPos.row)
     
     if curPos.column = COL_WORK_ITEM Then
-    	arr = Split(str, ";")
+    	sItems = Split(cellText, ";")(0)
     Elseif curPos.column = COL_COMENTARIO Then
-    	arr = Split(str, "-")    
+    	sItems = Split(cellText, "-")(0)
     Else 
     	MsgBox "Selecione a Coluna de 'Item de Trabalho' ou 'Comentário'"
     	exit sub
     End if
+    aItems = Split(sItems, ",")
 
-	Dim item as String
-	item = arr(0)
-	Dim id as Integer
-	
-	if Not IsNumeric(item) Then
-		msgbox "Error obtendo id do Item de Trabalho" & item
-		exit sub
-	End if
-	
-	Dim url as String
-	url = montarUrl(getText(COL_CONTEXTO, curPos.row), item)
-	
-	Dim sys as Object
-    sys = CreateUnoService("com.sun.star.system.SystemShellExecute")
-    sys.execute(getBrowser(), url, 0)
-	
+    Dim i as Integer
+    For i = LBound(aItems) to UBound(aItems)
+		Dim item as String
+		item = aItems(i)
+		
+		if IsNumeric(item) Then
+			Dim url as String
+			url = montarUrl(getText(COL_CONTEXTO, curPos.row), item)
+			
+			Dim sys as Object
+		    sys = CreateUnoService("com.sun.star.system.SystemShellExecute")
+		    sys.execute(getBrowser(), url, 0)
+		End if
+	Next	
 End Sub
 
 Sub getBrowser() as String
