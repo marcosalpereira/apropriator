@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -123,7 +125,13 @@ public class Apropriator {
 		JOptionPane.showMessageDialog(null, c, "Release Notes", JOptionPane.INFORMATION_MESSAGE);
 	}
 
+    private boolean isUpdateDisabled() {
+    	return System.getProperty("update.disabled", "NO").toUpperCase().matches("YES|SIM|1");
+    }
+
 	private void handleSoftwareUpdate(Arguments arguments) {
+		if (isUpdateDisabled()) return;
+
 		final File csvFile = arguments.getCsvFile();
 		final String targetFolder = csvFile.getParent();
 		progressInfo.setTitle("Atualizator - " + appVersion);
@@ -169,7 +177,9 @@ public class Apropriator {
     public void doItForMePlease(final File inputFile) throws ApropriationException {
         parseFile(inputFile);
         verificarCompatibilidade();
-        apropriate();
+        if (registrosApropriacoesIntegros()) {
+        	tratarArquivoApropriacao();
+        }
     }
 
     private void parseFile(final File inputFile) throws ApropriationException {
@@ -213,7 +223,8 @@ public class Apropriator {
         out.close();
     }
 
-    private void gravarArquivoRetornoApropriacao(List<TaskWeeklySummary> tasksWeeklySummary) {
+    private void gravarArquivoRetornoApropriacao(List<TaskWeeklySummary> tasksWeeklySummary,
+    		List<TaskRecord> trTitulosRecuperados) {
         final String exportFolder = this.apropriationFile.getConfig().getPlanilhaDir();
 
         final String fileName = exportFolder + File.separator + "sgi.ret";
@@ -228,11 +239,20 @@ public class Apropriator {
         //Marcar como registrado
         for (final TaskWeeklySummary summary : tasksWeeklySummary) {
             if (summary.isApropriado()) {
-                for (final TaskRecord task : summary.getTaskRecords()) {
-                    out.println(String.format("mcr|%s", task.getNumeroLinha()));
+                for (final TaskRecord taskRecord : summary.getTaskRecords()) {
+                    out.println(String.format("mcr|%s", taskRecord.getNumeroLinha()));
                 }
             }
         }
+        //Recuperar titulos
+        final int colunaComentario = 5;
+        for (final TaskRecord taskRecord : trTitulosRecuperados) {
+			out.println(String.format(
+				"set|%d|%d|%s",
+				colunaComentario,
+				taskRecord.getNumeroLinha(),
+				taskRecord.getNovoComentario()));
+		}
 
         //Modificar lista de validacao da coluna finalizar
         final int colunaFinalizar = 2;
@@ -243,20 +263,6 @@ public class Apropriator {
         out.close();
 
     }
-
-    private void apropriate() {
-    	progressInfo.setTitle(montarTitulo());
-        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
-        final List<TaskWeeklySummary> tasksWeeklySummary = tasksHandler.getWeeklySummary();
-        if (!tasksWeeklySummary.isEmpty()) {
-        	if (registrosApropriacoesIntegros()) {
-        		apropriate(tasksWeeklySummary);
-        	}
-        }
-        gravarArquivoRetornoApropriacao(tasksWeeklySummary);
-    }
-
-
 
     private boolean registrosApropriacoesIntegros() {
         final Config config = this.apropriationFile.getConfig();
@@ -358,16 +364,18 @@ public class Apropriator {
         return true;
     }
 
-    private void apropriate(List<TaskWeeklySummary> tasksWeeklySummary) {
+    private void tratarArquivoApropriacao() {
+    	progressInfo.setTitle(montarTitulo());
+
     	progressInfo.setInfoMessage("Iniciando apropriações...");
 
     	initSelenium();
 
-    	for (final TaskWeeklySummary summary : tasksWeeklySummary) {
-    		if (!apropriate(summary, null, null)) {
-    			break;
-    		}
-    	}
+    	final List<TaskWeeklySummary> twsApropriadas = apropriate();
+
+    	final List<TaskRecord> trTitulosRecuperados = recuperarTitulosItensTrabalho();
+
+    	gravarArquivoRetornoApropriacao(twsApropriadas, trTitulosRecuperados);
 
     	verificarFinalizarTarefasAtividades();
 
@@ -376,6 +384,80 @@ public class Apropriator {
     	SeleniumSupport.stopSelenium();
 
     }
+
+	private List<TaskRecord> recuperarTitulosItensTrabalho() {
+		final List<TaskRecord> ret = new ArrayList<TaskRecord>();
+        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
+        final Map<String, String> jaRecuperadas = new HashMap<String, String>();
+        for (final TaskRecord taskRecord : tasksHandler.getItensRecuperarTitulo()) {
+        	final Task task = taskRecord.getTask();
+        	String novosIds = null;
+        	String novosTitulos = null;
+        	for (final Integer idItem : task.getItensRecuperarTitulo()) {
+        		final String chave = task.getContexto() + idItem;
+	        	String titulo = jaRecuperadas.get(chave);
+	        	if (titulo == null) {
+	        		titulo = recuperarTitulo(task.getContexto(), idItem);
+	        		if (titulo == null) {
+	        			return ret;
+	        		}
+	        		if (titulo.isEmpty()) {
+	        			continue;
+	        		}
+	        		jaRecuperadas.put(chave, titulo);
+	        	}
+	        	if (novosIds == null) {
+	        		novosIds = String.valueOf(idItem);
+	        		novosTitulos =  titulo;
+	        	} else {
+	        		novosIds += "," + idItem;
+	        		novosTitulos += "::" + titulo;
+	        	}
+        	}
+        	if (novosIds != null) {
+        		final String novoComentario = novosIds + "-" + novosTitulos;
+        		taskRecord.setNovoComentario(novoComentario);
+        		ret.add(taskRecord);
+        	}
+		}
+		return ret;
+	}
+
+	private String recuperarTitulo(String contexto, Integer id) {
+		try {
+			final VisaoGeralPage visaoGeralPage =
+					gotoVisaoGeralPage(contexto, id);
+			return visaoGeralPage.getTituloItemTrabalho();
+
+        } catch (final RuntimeException e) {
+            final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
+            if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
+                return recuperarTitulo(contexto, id);
+
+            } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
+                return "";
+
+            } else {
+                return null;
+
+            }
+        }
+	}
+
+	private List<TaskWeeklySummary> apropriate() {
+		final List<TaskWeeklySummary> twsApropriadas = new ArrayList<TaskWeeklySummary>();
+		if (!this.apropriationFile.isCaptureInfo()) {
+	        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
+
+			for (final TaskWeeklySummary summary : tasksHandler.getWeeklySummary()) {
+	    		if (!apropriate(summary, null, null)) {
+	    			break;
+	    		}
+	    		twsApropriadas.add(summary);
+	    	}
+		}
+		return twsApropriadas;
+	}
 
 	private void initSelenium() {
 		final Config config = apropriationFile.getConfig();
@@ -458,7 +540,6 @@ public class Apropriator {
         }
     }
 
-
     private void verificarFinalizarTarefasAtividades() {
         verificarFinalizarAtividade();
         verificarFinalizarTarefa();
@@ -487,17 +568,16 @@ public class Apropriator {
 	}
 
 	private boolean finalizarAtividade(final TaskSummary summary) {
-		final Alm alm = new Alm();
 		try {
 			final Task task = summary.getTask();
 			final Collection<Integer> idsAtividades = summary.getIdsAtividades();
 			if (idsAtividades.isEmpty()) {
-				final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(
+				final VisaoGeralPage visaoGeralPage = gotoVisaoGeralPage(
 						task.getContexto(), task.getItemTrabalho().getId());
 				visaoGeralPage.incluirComentarioFinalizacaoTarefa(summary);
 			} else {
 				for (final Integer id : idsAtividades) {
-					final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(
+					final VisaoGeralPage visaoGeralPage = gotoVisaoGeralPage(
 							task.getContexto(), id);
 					visaoGeralPage.finalizarTarefa(summary);
 				}
@@ -520,10 +600,9 @@ public class Apropriator {
 	}
 
 	private boolean finalizarTarefa(final TaskSummary summary) {
-		final Alm alm = new Alm();
 		try {
 			final Task task = summary.getTask();
-			final VisaoGeralPage visaoGeralPage = alm.gotoApropriationPageVisaoGeral(
+			final VisaoGeralPage visaoGeralPage = gotoVisaoGeralPage(
 					task.getContexto(), task.getItemTrabalho().getId());
 			visaoGeralPage.finalizarTarefa(summary);
 			return true;
@@ -552,6 +631,17 @@ public class Apropriator {
             doLogin();
             return gotoApropriationPage(summary);
         }
+    }
+
+    private VisaoGeralPage gotoVisaoGeralPage(String contexto, int id) {
+    	final Alm alm = new Alm();
+    	try {
+    		return alm.gotoVisaoGeralPage(
+    				contexto, id);
+    	} catch (final NotLoggedInException e) {
+    		doLogin();
+    		return gotoVisaoGeralPage(contexto, id);
+    	}
     }
 
     private void doLogin() {

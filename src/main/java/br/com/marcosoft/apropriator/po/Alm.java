@@ -28,7 +28,11 @@ public class Alm extends PageObject {
         sleep(1000);
 	}
 
-    public VisaoGeralPage gotoApropriationPageVisaoGeral(String contexto, int id) {
+    public VisaoGeralPage gotoVisaoGeralPage(String contexto, int id) throws NotLoggedInException {
+        if (LoginPageAlm.isOnLoginPage()) {
+            throw new NotLoggedInException();
+        }
+
         final String url = montarUrlVisaoGeralAlm(contexto, id);
         final WebDriver driver = getWebDriver();
         tratarProblemaNaoReconhecimentoCamposPagina(driver);

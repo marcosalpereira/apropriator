@@ -1,39 +1,55 @@
 package br.com.marcosoft.apropriator.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import br.com.marcosoft.apropriator.util.Util;
 
 /**
  * An Task.
  */
 public class Task extends BaseModel {
 
-    private String contexto;
+    private final String contexto;
 
-    private ItemTrabalho itemTrabalho;
+    private final ItemTrabalho itemTrabalho;
 
-    private String comentario;
+    private final String comentario;
+
+	private final List<Integer> itensRecuperarTitulo;
 
     public Task(String contexto, ItemTrabalho itemTrabalho, String comentario) {
         super();
         this.contexto = contexto;
         this.itemTrabalho = itemTrabalho;
         this.comentario = comentario;
+        this.itensRecuperarTitulo = selecionarItensRecuperarTitulo(comentario);
     }
 
-    public void setContexto(String contexto) {
-        this.contexto = contexto;
-    }
+    private List<Integer> selecionarItensRecuperarTitulo(String comentario) {
+    	final List<Integer> itens = new ArrayList<Integer>();
+		for (final String itemQuery : comentario.split(",", -1)) {
+			if (itemQuery.startsWith("?")) {
+				int endIndex = itemQuery.indexOf('-');
+				if (endIndex == -1) endIndex = itemQuery.length();
+				final Integer item =
+						Util.parseInt(itemQuery.substring(1, endIndex), 0);
+				if (item > 0) {
+					itens.add(item);
+				}
+			}
+		}
+		return itens;
+	}
 
-    public void setItemTrabalho(ItemTrabalho itemTrabalho) {
-        this.itemTrabalho = itemTrabalho;
-    }
+    public List<Integer> getItensRecuperarTitulo() {
+		return itensRecuperarTitulo;
+	}
 
-    public void setComentario(String comentario) {
-        this.comentario = comentario;
-    }
-
-    public String getContexto() {
+	public String getContexto() {
         return contexto;
     }
 
@@ -55,7 +71,8 @@ public class Task extends BaseModel {
             final Task that = (Task) obj;
             return new EqualsBuilder().append(this.contexto, that.contexto)
                 .append(this.itemTrabalho, that.itemTrabalho)
-                .append(this.comentario, that.comentario).isEquals();
+                .append(this.comentario, that.comentario)
+                .isEquals();
         }
 
         return false;

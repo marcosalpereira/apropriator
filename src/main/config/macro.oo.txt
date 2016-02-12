@@ -16,8 +16,9 @@
 '1.6 - Tratamento melhorado da comparacao de versoes
 '1.7 - Opcao para abrir item de trabalho
 '1.8 - Abrir varios itens de trabalho no browser
+'1.9 - Possibilidade recuperar titulos dos itens de trabalho; 
 
-Const VERSION = "1.8"
+Const VERSION = "1.9"
 
 
 Const COL_REG = 0
@@ -47,12 +48,19 @@ sub main
 '   importReturnFile "/home/54706424372/Documentos/apropriacao/sgi.ret"
 end sub
 
+'Capturar titulos itens de trabalho
+sub CapturarTitulos
+  Dim sFilename As String
+  sFilename = getDocDir() & "sgi.csv"  
+  writeTaskCsvFile sFileName, true
+  execImportApp sFilename  
+end sub
 
 'Exportar os dados para o SGI
 sub export
   Dim sFilename As String
   sFilename = getDocDir() & "sgi.csv"  
-  writeTaskCsvFile sFileName
+  writeTaskCsvFile sFileName, false
   execImportApp sFilename  
 end sub
 
@@ -62,7 +70,7 @@ sub setActiveSheet(index as integer)
   oDoc.CurrentController.setActiveSheet(oSheets.getByIndex(index))
 End sub
 
-Sub writeTaskCsvFile(sFilename as String)
+Sub writeTaskCsvFile(sFilename as String, capture as Boolean)
   Dim oDoc As Object ' The current Document
   Dim iFileNo as Integer
   Dim sLine As String
@@ -85,6 +93,11 @@ Sub writeTaskCsvFile(sFilename as String)
     sLine = "cfg|" & getText(0, row) & "|" & getText(1, row)
     print #iFileNo, sLine
   Next row  
+
+  'Capture?
+  if (capture) Then
+    print #iFileNo, "cap"  
+  End if
   
   'Export data
   setActiveSheet(0)

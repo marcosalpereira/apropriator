@@ -15,6 +15,8 @@ public class ApropriationFile extends BaseModel {
 
     private TasksHandler tasksHandler;
 
+	private boolean captureInfo;
+
     public ApropriationFile(File inputFile) {
         this.inputFile = inputFile;
     }
@@ -147,5 +149,13 @@ public class ApropriationFile extends BaseModel {
     public void adicionarTasksRecord(TaskRecord taskRecord) {
         tasksRecords.add(taskRecord);
     }
+
+	public void setCaptureInfo(boolean captureInfo) {
+		this.captureInfo = captureInfo;
+	}
+
+	public boolean isCaptureInfo() {
+		return captureInfo;
+	}
 
 }

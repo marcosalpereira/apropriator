@@ -91,31 +91,32 @@ public class ApropriationFileParser {
             parseAtividade(ret, fields);
 
         } else if (TR_CAPTURE.equals(fields[POS_TIPO_REGISTRO])) {
-            //NOP
+            ret.setCaptureInfo(true);
         }
     }
 
-    private void parseAtividade(final ApropriationFile ret, final String[] fields)
+	private void parseAtividade(final ApropriationFile ret, final String[] fields)
         throws IOException {
         if (fields.length != REG_QUANTIDADE_CAMPOS) {
             throw new IOException(
                 "Erro lendo as atividades. Quantidade de campos difere da esperada!");
         }
         final int duracao = Integer.parseInt(fields[POS_REG_DURACAO_MIN], 10);
-        if (duracao != 0) {
-            numeroLinha =  Integer.parseInt(fields[POS_REG_NUMERO_LINHA], 10);
-            final TaskRecord taskRecord = new TaskRecord();
-            taskRecord.setData(Util.parseDate(Util.DD_MM_YY_FORMAT, fields[POS_REG_DATA].substring(0, 8)));
-            taskRecord.setRegistrado(!"Não".equals(fields[POS_REG_REGISTRADO]));
-            taskRecord.setDuracao(duracao);
-            taskRecord.setFinalizar(parseFinalizar(fields));
-            taskRecord.setNumeroLinha(numeroLinha);
-            taskRecord.setTask(parseTask(fields));
-            taskRecord.setHoraInicio(parseHora(fields[POS_REG_HORA_INICIO]));
-            taskRecord.setHoraTermino(parseHora(fields[POS_REG_HORA_TERMINO]));
 
-            ret.adicionarTasksRecord(taskRecord);
+        numeroLinha =  Integer.parseInt(fields[POS_REG_NUMERO_LINHA], 10);
+        final TaskRecord taskRecord = new TaskRecord();
+        taskRecord.setData(Util.parseDate(Util.DD_MM_YY_FORMAT, fields[POS_REG_DATA].substring(0, 8)));
+        taskRecord.setRegistrado(!"Não".equals(fields[POS_REG_REGISTRADO]));
+        taskRecord.setDuracao(duracao);
+        taskRecord.setFinalizar(parseFinalizar(fields));
+        taskRecord.setNumeroLinha(numeroLinha);
+        taskRecord.setTask(parseTask(fields));
+        if (duracao > 0) {
+        	taskRecord.setHoraInicio(parseHora(fields[POS_REG_HORA_INICIO]));
+        	taskRecord.setHoraTermino(parseHora(fields[POS_REG_HORA_TERMINO]));
         }
+        ret.adicionarTasksRecord(taskRecord);
+
     }
 
 	private OpcaoFinalizacao parseFinalizar(final String[] fields) {

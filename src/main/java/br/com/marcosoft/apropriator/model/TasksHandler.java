@@ -30,7 +30,7 @@ public class TasksHandler extends BaseModel {
         final Map<Key, TaskWeeklySummary> map = new LinkedHashMap<Key, TaskWeeklySummary>();
 
         for (final TaskRecord taskRecord : taskRecords) {
-            if (taskRecord.isRegistrado()) {
+            if (taskRecord.isRegistrado() || taskRecord.getDuracao() == 0) {
                 continue;
             }
             final Task task = taskRecord.getTask();
@@ -67,12 +67,14 @@ public class TasksHandler extends BaseModel {
         final List<TaskRecord> ret = new ArrayList<TaskRecord>();
         for (int i = 0; i < taskRecords.size(); i++) {
             final TaskRecord taskA = taskRecords.get(i);
-            for (int j = i + 1; j < taskRecords.size(); j++) {
-                final TaskRecord taskB = taskRecords.get(j);
-                if (taskA.overlaps(taskB)) {
-                    ret.add(taskA);
-                    ret.add(taskB);
-                }
+            if (taskA.getDuracao() > 0) {
+	            for (int j = i + 1; j < taskRecords.size(); j++) {
+	                final TaskRecord taskB = taskRecords.get(j);
+	                if (taskA.overlaps(taskB)) {
+	                    ret.add(taskA);
+	                    ret.add(taskB);
+	                }
+	            }
             }
         }
         return ret;
@@ -94,14 +96,14 @@ public class TasksHandler extends BaseModel {
     private Collection<TaskRecord> selecionarRegistrosNaoApropriados() {
         final Set<Task> taskNaoRegistradas = new LinkedHashSet<Task>();
         for (final TaskRecord taskRecord : taskRecords) {
-            if (!taskRecord.isRegistrado()) {
+            if (!taskRecord.isRegistrado() && taskRecord.getDuracao() > 0) {
                 taskNaoRegistradas.add(taskRecord.getTask());
             }
         }
 
         final Collection<TaskRecord> ret = new ArrayList<TaskRecord>();
         for (final TaskRecord task : taskRecords) {
-            if (taskNaoRegistradas.contains(task)) {
+            if (task.getDuracao() > 0 && taskNaoRegistradas.contains(task)) {
                 ret.add(task);
             }
         }
@@ -123,7 +125,8 @@ public class TasksHandler extends BaseModel {
 			final Collection<OpcaoFinalizacao> opcaoFinalizacao) {
 		final Set<Task> taskFinalizadas = new LinkedHashSet<Task>();
         for (final TaskRecord taskRecord : taskRecords) {
-			if (opcaoFinalizacao.contains(taskRecord.getFinalizar())  && !taskRecord.isRegistrado()) {
+			if (opcaoFinalizacao.contains(taskRecord.getFinalizar())
+					&& !taskRecord.isRegistrado() && taskRecord.getDuracao() > 0) {
                 taskFinalizadas.add(taskRecord.getTask());
             }
         }
@@ -144,6 +147,16 @@ public class TasksHandler extends BaseModel {
         }
 
         return map.values();
+	}
+
+	public List<TaskRecord> getItensRecuperarTitulo() {
+		final List<TaskRecord> ret = new ArrayList<TaskRecord>();
+		for (final TaskRecord taskRecord : taskRecords) {
+			if (taskRecord.isRecuperarTituloItemTrabalho()) {
+				ret.add(taskRecord);
+			}
+		}
+		return ret;
 	}
 
 }

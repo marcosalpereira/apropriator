@@ -18,8 +18,14 @@ public class VisaoGeralPage extends PageObject {
 		}
     }
 
-    public void incluirComentarioFinalizacaoTarefa(final TaskSummary summary) {
+    public String getTituloItemTrabalho() {
+    	final String xpath =
+    			"//*[@id='com_ibm_team_workitem_web_mvvm_view_editor_RichTextEditorView_0']/div[2]";
+    	final WebElement element = getWebDriver().findElement(By.xpath(xpath));
+    	return element.getText();
+    }
 
+    public void incluirComentarioFinalizacaoTarefa(final TaskSummary summary) {
         final String comentario = String.format("Finalizando %s, tempo gasto %s",
 		summary.getComentario(), Util.formatMinutes(summary.getSum()));
 

@@ -1,7 +1,7 @@
 <html>
 
 <h2>
-ATENÇÃO - Atualização para adicionar um botão para possibilitar a recuperação do titulo de itens de trabalho</b></u>
+ATENÇÃO - Atualização para adicionar um botão para abrir itens de trabalho diretamente da planilha</b></u>
 </h2>
 
 <p>Para atualizar é bem fácil:</p>
@@ -16,22 +16,19 @@ ATENÇÃO - Atualização para adicionar um botão para possibilitar a recupera�
 </ol>
 
 <p>Para configurar um botão na barra de ferramentas da planilha de apropriação para 
-capturar o titulo do item de trabalho informado "Comentário" faça:</p>
+abrir um item de trabalho especificado na columa "Item de Trabalho" ou "Comentário" faça:</p>
 <ol>
 	<li>Use a Opção do Menu do BrOffice: Ferramentas -> Personalizar</li>
 	<li>Na aba de "Barra de Ferramentas" Selecione no campo "Barra de Ferramentas" selecione "Apropriator"</li>
 	<li>Use o botão "Adicionar..."</li>
 	<li>No Dialogo "Adicionar Comandos" selecione na lista de categorias: "Macros do LibreOffice -> apropriacao.ods -> Standard -> Module1</li>
-	<li>Na lista "Comandos" selecione "CapturarTitulos" e clique no botão adicionar. Se desejar pode customizar o nome do botão como desejado</li>
+	<li>Na lista "Comandos" selecione "abrir" e clique no botão adicionar. Se desejar pode customizar o nome do botão como desejado</li>
 	<li>Use o botão "OK"</li>
 </ol>
 
-<p>Para usar o botão recém criado, digite numa célula da coluna "Comentário" algum texto da forma "?<id_item_trabalho>,...". Ex: "?123" ou "?123,?456" e use o botão recém criado
-para capturar os titulos dos itens</p>  
-<p>
-A recuperação de titulos também é feita quando se faz a apropriação. 
-<b>O botão faz apenas a captura SEM fazer a apropriação.</> 
-</p>
+<p>Para usar o botão recém criado, selecione uma célula da coluna "Item de Trabalho" ou "Comentário" e use o botão recém criado
+para abrir no browser o item com o id especificado na célula</p>  
+
 
 <p>Att Apropriator</p>
 

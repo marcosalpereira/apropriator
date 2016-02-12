@@ -35,6 +35,16 @@ public class TaskRecord extends BaseModel {
 
     private Calendar calendar;
 
+	private String novoComentario;
+
+	public void setNovoComentario(String novoComentario) {
+		this.novoComentario = novoComentario;
+	}
+
+	public String getNovoComentario() {
+		return novoComentario;
+	}
+
     public Task getTask() {
         return task;
     }
@@ -188,6 +198,10 @@ public class TaskRecord extends BaseModel {
 
     public OpcaoFinalizacao getFinalizar() {
 		return finalizar;
+	}
+
+	public boolean isRecuperarTituloItemTrabalho() {
+		return !task.getItensRecuperarTitulo().isEmpty();
 	}
 
 }
