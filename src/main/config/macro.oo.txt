@@ -43,7 +43,7 @@ Const MAX_ROW = 199
 Const OLD_JAR_NAME = "sgi-apropriator-jar-with-dependencies.jar"
 
 sub main
-   msgbox getJarFile("/home/54706424372/Documentos/apropriacao/")
+'   msgbox getJarFile("/home/54706424372/Documentos/apropriacao/")
 '   writeCaptureProjectCsvFile "/home/54756424372/Documentos/apropriacao/sgi.csv"
 '   importReturnFile "/home/54706424372/Documentos/apropriacao/sgi.ret"
 end sub
@@ -77,6 +77,7 @@ Sub writeTaskCsvFile(sFilename as String, capture as Boolean)
   Dim iRowsCount as Integer
   Dim oSheet As Object
   Dim oSheets As Object ' A collection of all sheets
+  Dim texto as String
 
 
   iFileNo = FreeFile
@@ -108,7 +109,9 @@ Sub writeTaskCsvFile(sFilename as String, capture as Boolean)
 
     sLine = "reg|" & row
     For col = COL_REG to COL_LAST
-        sLine = sLine & "|" & getText(col, row)
+        texto = getText(col, row)
+        texto = Replace(texto, chr(10), "/n")
+        sLine = sLine & "|" & texto
     Next col
     print #iFileNo, sLine
     iRowsCount = iRowsCount + 1
@@ -345,7 +348,7 @@ end sub
 sub setText(col as integer, row as integer, str as String)
     dim oSheet
     oSheet = ThisComponent.CurrentController.getActiveSheet()
-    oSheet.getCellByPosition(col,row).string = str
+    oSheet.getCellByPosition(col,row).string = Replace(str, "/n", chr(13))
 end sub
 
 'Pegar a proxima linha disponivel (vazia)
@@ -445,6 +448,9 @@ Sub abrir()
     For i = LBound(aItems) to UBound(aItems)
 		Dim item as String
 		item = aItems(i)
+		if (left(item, 1) = "?") Then
+			item = mid$(item, 2, Len(item))
+		End if
 		
 		if IsNumeric(item) Then
 			Dim url as String
@@ -659,3 +665,9 @@ sub resetStatusBar()
      ThisComponent.CurrentController.StatusIndicator.Reset
    End if
 End Sub
+
+Function Replace(Source As String, Search As String, NewPart As String)
+  Dim Result As String  
+  Result = join(split(Source, Search), NewPart)
+  Replace = Result
+End Function

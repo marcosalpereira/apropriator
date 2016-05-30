@@ -29,10 +29,7 @@ public class TasksHandler extends BaseModel {
     public List<TaskWeeklySummary> getWeeklySummary() {
         final Map<Key, TaskWeeklySummary> map = new LinkedHashMap<Key, TaskWeeklySummary>();
 
-        for (final TaskRecord taskRecord : taskRecords) {
-            if (taskRecord.isRegistrado() || taskRecord.getDuracao() == 0) {
-                continue;
-            }
+        for (final TaskRecord taskRecord : selecionarRegistrosPendentesApropriacao()) {
             final Task task = taskRecord.getTask();
             final int semana = taskRecord.getSemana();
             final Key key = new Key(task.getItemTrabalho(), semana);
@@ -65,16 +62,16 @@ public class TasksHandler extends BaseModel {
 
     public List<TaskRecord> getRegistrosComSobreposicao() {
         final List<TaskRecord> ret = new ArrayList<TaskRecord>();
-        for (int i = 0; i < taskRecords.size(); i++) {
-            final TaskRecord taskA = taskRecords.get(i);
-            if (taskA.getDuracao() > 0) {
-	            for (int j = i + 1; j < taskRecords.size(); j++) {
-	                final TaskRecord taskB = taskRecords.get(j);
-	                if (taskA.overlaps(taskB)) {
-	                    ret.add(taskA);
-	                    ret.add(taskB);
-	                }
-	            }
+        final List<TaskRecord> registrosPendentes =
+        		selecionarRegistrosPendentesApropriacao();
+		for (int i = 0; i < registrosPendentes.size(); i++) {
+            final TaskRecord taskA = registrosPendentes.get(i);
+            for (int j = i + 1; j < registrosPendentes.size(); j++) {
+            	final TaskRecord taskB = registrosPendentes.get(j);
+            	if (taskA.overlaps(taskB)) {
+            		ret.add(taskA);
+            		ret.add(taskB);
+            	}
             }
         }
         return ret;
@@ -83,7 +80,7 @@ public class TasksHandler extends BaseModel {
     public Map<Date, Integer> getDiasComInconsistencia(int minimoMinutosApropriacaoDia,
         int maximoMinutosApropriacaoDia) {
         final Map<Date, Integer> inconsistencia = new LinkedHashMap<Date, Integer>();
-        final Map<Date, Integer> daySummary = getDaySummary(selecionarRegistrosNaoApropriados());
+        final Map<Date, Integer> daySummary = getDaySummary(selecionarRegistrosComTarefasNaoApropriadas());
         for (final Entry<Date, Integer> entry : daySummary.entrySet()) {
             final Integer totalDia = entry.getValue();
             if (totalDia < minimoMinutosApropriacaoDia || totalDia > maximoMinutosApropriacaoDia) {
@@ -93,17 +90,26 @@ public class TasksHandler extends BaseModel {
         return inconsistencia;
     }
 
-    private Collection<TaskRecord> selecionarRegistrosNaoApropriados() {
+    private List<TaskRecord> selecionarRegistrosPendentesApropriacao() {
+    	final List<TaskRecord> ret = new ArrayList<TaskRecord>();
+    	for (final TaskRecord taskRecord : taskRecords) {
+    		if (!taskRecord.isRegistrado() && taskRecord.getDuracao() > 0) {
+    			ret.add(taskRecord);
+    		}
+    	}
+    	return ret;
+    }
+
+    private Collection<TaskRecord> selecionarRegistrosComTarefasNaoApropriadas() {
         final Set<Task> taskNaoRegistradas = new LinkedHashSet<Task>();
-        for (final TaskRecord taskRecord : taskRecords) {
-            if (!taskRecord.isRegistrado() && taskRecord.getDuracao() > 0) {
-                taskNaoRegistradas.add(taskRecord.getTask());
-            }
+        final List<TaskRecord> pendentes = selecionarRegistrosPendentesApropriacao();
+		for (final TaskRecord taskRecord : pendentes) {
+			taskNaoRegistradas.add(taskRecord.getTask());
         }
 
         final Collection<TaskRecord> ret = new ArrayList<TaskRecord>();
-        for (final TaskRecord task : taskRecords) {
-            if (task.getDuracao() > 0 && taskNaoRegistradas.contains(task)) {
+        for (final TaskRecord task : pendentes) {
+            if (taskNaoRegistradas.contains(task)) {
                 ret.add(task);
             }
         }
@@ -124,9 +130,9 @@ public class TasksHandler extends BaseModel {
 	private Collection<TaskSummary> getResumoFinalizadas(
 			final Collection<OpcaoFinalizacao> opcaoFinalizacao) {
 		final Set<Task> taskFinalizadas = new LinkedHashSet<Task>();
-        for (final TaskRecord taskRecord : taskRecords) {
-			if (opcaoFinalizacao.contains(taskRecord.getFinalizar())
-					&& !taskRecord.isRegistrado() && taskRecord.getDuracao() > 0) {
+        final List<TaskRecord> pendentesApropriacao = selecionarRegistrosPendentesApropriacao();
+		for (final TaskRecord taskRecord : pendentesApropriacao) {
+			if (opcaoFinalizacao.contains(taskRecord.getFinalizar())) {
                 taskFinalizadas.add(taskRecord.getTask());
             }
         }
@@ -134,7 +140,7 @@ public class TasksHandler extends BaseModel {
         final Map<Task, TaskSummary> map = new HashMap<Task, TaskSummary>();
 
         for (final Task taskFinalizada : taskFinalizadas)
-        	for (final TaskRecord taskRecord : taskRecords) {
+        	for (final TaskRecord taskRecord : pendentesApropriacao) {
         		if (taskFinalizada.getContexto().equals(taskRecord.getTask().getContexto())
         				&& taskFinalizada.getComentario().equals(taskRecord.getTask().getComentario())) {
                 TaskSummary summary = map.get(taskFinalizada);

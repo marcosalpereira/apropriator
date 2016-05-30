@@ -4,4 +4,4 @@ Created-By: Apache Maven
 Built-By: 54706424372
 Build-Jdk: 1.6.0_20
 Main-Class: br.com.marcosoft.sgi.Apropriator
-version: ${pom.version}
+Implementation-Version: ${pom.version}

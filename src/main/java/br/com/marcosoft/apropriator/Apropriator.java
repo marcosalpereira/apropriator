@@ -10,11 +10,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -24,23 +24,14 @@ import javax.swing.JTextPane;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
-import br.com.marcosoft.apropriator.ProgressInfo.TipoTempo;
 import br.com.marcosoft.apropriator.model.ApropriationFile;
 import br.com.marcosoft.apropriator.model.ApropriationFile.Config;
-import br.com.marcosoft.apropriator.model.DaySummary;
-import br.com.marcosoft.apropriator.model.Task;
 import br.com.marcosoft.apropriator.model.TaskRecord;
 import br.com.marcosoft.apropriator.model.TaskSummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
 import br.com.marcosoft.apropriator.model.TasksHandler;
-import br.com.marcosoft.apropriator.po.Alm;
-import br.com.marcosoft.apropriator.po.LoginPageAlm;
-import br.com.marcosoft.apropriator.po.NotLoggedInException;
-import br.com.marcosoft.apropriator.po.RastreamentoHorasPage;
-import br.com.marcosoft.apropriator.po.VisaoGeralPage;
 import br.com.marcosoft.apropriator.selenium.SeleniumSupport;
 import br.com.marcosoft.apropriator.util.ApplicationProperties;
-import br.com.marcosoft.apropriator.util.Cipher;
 import br.com.marcosoft.apropriator.util.Exec;
 import br.com.marcosoft.apropriator.util.SoftwareUpdate;
 import br.com.marcosoft.apropriator.util.Util;
@@ -55,7 +46,10 @@ public class Apropriator {
 
 	private final ProgressInfo progressInfo;
 
-    private static final String CHAVE_SENHA_ALM_APP_PROPERTIES = "alm.password";
+	private final Apropriador apropriador;
+
+	private final FinalizadorAtividade finalizadorAtividade;
+	private final FinalizadorTarefa finalizadorTarefa;
 
     public static void main(final String[] args) {
     	final Apropriator apropriator = new Apropriator();
@@ -74,12 +68,11 @@ public class Apropriator {
 
 	private void showReleaseNotes() {
 		final String releaseNotesKey = "last-version";
-		final String lastVersion = this.applicantionProperties.getProperty(releaseNotesKey);
-		if (appVersion.get().equals(lastVersion)) {
+		final Version lastVersion = getLastExecutedVersion(releaseNotesKey);
+		getApplicantionProperties().setProperty(releaseNotesKey, appVersion.get());
+		if (!appVersion.gt(lastVersion)) {
 			return;
 		}
-		this.applicantionProperties.setProperty(releaseNotesKey, appVersion.get());
-
 		try {
 			final InputStream stream = getClass()
 					.getClassLoader().getResourceAsStream("releaseNotes.txt");
@@ -90,13 +83,23 @@ public class Apropriator {
 		}
 	}
 
+	private Version getLastExecutedVersion(final String releaseNotesKey) {
+		final String property = getApplicantionProperties().getProperty(releaseNotesKey);
+		try {
+			return new Version(property);
+		} catch (final IllegalArgumentException e) {
+			return null;
+		}
+	}
+
 	private void showWarnMessage() {
 		final String warnMessageKey = "last-version-warn-message";
-		final String lastVersion = this.applicantionProperties.getProperty(warnMessageKey);
-		if (appVersion.get().equals(lastVersion)) {
+		final Version lastVersion = getLastExecutedVersion(warnMessageKey);
+		getApplicantionProperties().setProperty(warnMessageKey, appVersion.get());
+
+		if (!appVersion.gt(lastVersion)) {
 			return;
 		}
-		this.applicantionProperties.setProperty(warnMessageKey, appVersion.get());
 
 		try {
 			final String fileName = String.format("mensagemImportante-%s.txt", appVersion.get());
@@ -109,6 +112,10 @@ public class Apropriator {
 			}
 		} catch (final IOException e) {
 		}
+	}
+
+	private ApplicationProperties getApplicantionProperties() {
+		return appContext.getApplicationProperties();
 	}
 
 	private static void showWarnMessage(final String conteudo) {
@@ -148,31 +155,43 @@ public class Apropriator {
 	}
 
     private Apropriator() {
+    	appContext = new AppContext();
+
     	appVersion = new Version(getAppVersion());
+
     	progressInfo = new ProgressInfo();
+    	appContext.setProgressInfo(progressInfo);
+        appContext.setApplicationProperties(new ApplicationProperties("sgiApropriator"));
+
+        recuperadorTitulos = new RecuperadorTitulos(appContext);
+        apropriador = new Apropriador(appContext);
+        finalizadorAtividade = new FinalizadorAtividade(appContext);
+        finalizadorTarefa = new FinalizadorTarefa(appContext);
+
 	}
 
     private String getAppVersion() {
-        final String ret = "?";
-		final InputStream stream = getClass()
-				.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
-        if (stream != null) {
-            final Properties prop = new Properties();
-            try {
-                prop.load(stream);
-                return prop.getProperty("version");
-            } catch (final IOException e) {
-            }
-        }
-        return ret;
+		final InputStream inputStream =
+				getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
+		String ret = null;
+		if (inputStream != null) {
+			try {
+				final Attributes attributes = new Manifest(inputStream).getMainAttributes();
+				ret = (String) attributes.get(Attributes.Name.IMPLEMENTATION_VERSION);
+			} catch (final IOException e) {
+			}
+		}
+		if (ret == null) {
+			ret = "?";
+		}
+		return ret;
     }
 
     private ApropriationFile apropriationFile;
 
-    private final ApplicationProperties applicantionProperties = new ApplicationProperties(
-        "sgiApropriator");
+	private final RecuperadorTitulos recuperadorTitulos;
 
-    private boolean lerSenhaSalva = true;
+	private final AppContext appContext;
 
     public void doItForMePlease(final File inputFile) throws ApropriationException {
         parseFile(inputFile);
@@ -186,6 +205,8 @@ public class Apropriator {
         final ApropriationFileParser apropriationFileParser = new ApropriationFileParser(inputFile);
         try {
             apropriationFile = apropriationFileParser.parse();
+
+            appContext.setApropriationFile(apropriationFile);
         } catch (final IOException e) {
             throw new ApropriationException(e);
         }
@@ -225,7 +246,7 @@ public class Apropriator {
 
     private void gravarArquivoRetornoApropriacao(List<TaskWeeklySummary> tasksWeeklySummary,
     		List<TaskRecord> trTitulosRecuperados) {
-        final String exportFolder = this.apropriationFile.getConfig().getPlanilhaDir();
+        final String exportFolder = getConfig().getPlanilhaDir();
 
         final String fileName = exportFolder + File.separator + "sgi.ret";
         PrintWriter out;
@@ -265,7 +286,7 @@ public class Apropriator {
     }
 
     private boolean registrosApropriacoesIntegros() {
-        final Config config = this.apropriationFile.getConfig();
+        final Config config = getConfig();
         final int minimoMinutosApropriacaoDia = config.getMinimoMinutosApropriacaoDia();
         final int maximoMinutosApropriacaoDia = config.getMaximoMinutosApropriacaoDia();
 
@@ -300,7 +321,7 @@ public class Apropriator {
                         Util.DD_MM_YY_FORMAT.format(entry.getKey()), entry.getValue()));
         }
 
-        final Config config = this.apropriationFile.getConfig();
+        final Config config = getConfig();
         final int minimoMinutosApropriacaoDia = config.getMinimoMinutosApropriacaoDia();
         final int maximoMinutosApropriacaoDia = config.getMaximoMinutosApropriacaoDia();
 
@@ -369,80 +390,22 @@ public class Apropriator {
 
     	progressInfo.setInfoMessage("Iniciando apropriações...");
 
-    	initSelenium();
+    	SeleniumSupport.initSelenium(appContext.getConfig());
 
     	final List<TaskWeeklySummary> twsApropriadas = apropriate();
 
-    	final List<TaskRecord> trTitulosRecuperados = recuperarTitulosItensTrabalho();
+    	final List<TaskRecord> trTitulosRecuperados =
+    			recuperadorTitulos.recuperar();
 
     	gravarArquivoRetornoApropriacao(twsApropriadas, trTitulosRecuperados);
 
-    	verificarFinalizarTarefasAtividades();
+    	verificarFinalizarAtividade();
+		verificarFinalizarTarefa();
 
     	progressInfo.dispose();
 
     	SeleniumSupport.stopSelenium();
-
     }
-
-	private List<TaskRecord> recuperarTitulosItensTrabalho() {
-		final List<TaskRecord> ret = new ArrayList<TaskRecord>();
-        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
-        final Map<String, String> jaRecuperadas = new HashMap<String, String>();
-        for (final TaskRecord taskRecord : tasksHandler.getItensRecuperarTitulo()) {
-        	final Task task = taskRecord.getTask();
-        	String novosIds = null;
-        	String novosTitulos = null;
-        	for (final Integer idItem : task.getItensRecuperarTitulo()) {
-        		final String chave = task.getContexto() + idItem;
-	        	String titulo = jaRecuperadas.get(chave);
-	        	if (titulo == null) {
-	        		titulo = recuperarTitulo(task.getContexto(), idItem);
-	        		if (titulo == null) {
-	        			return ret;
-	        		}
-	        		if (titulo.isEmpty()) {
-	        			continue;
-	        		}
-	        		jaRecuperadas.put(chave, titulo);
-	        	}
-	        	if (novosIds == null) {
-	        		novosIds = String.valueOf(idItem);
-	        		novosTitulos =  titulo;
-	        	} else {
-	        		novosIds += "," + idItem;
-	        		novosTitulos += "::" + titulo;
-	        	}
-        	}
-        	if (novosIds != null) {
-        		final String novoComentario = novosIds + "-" + novosTitulos;
-        		taskRecord.setNovoComentario(novoComentario);
-        		ret.add(taskRecord);
-        	}
-		}
-		return ret;
-	}
-
-	private String recuperarTitulo(String contexto, Integer id) {
-		try {
-			final VisaoGeralPage visaoGeralPage =
-					gotoVisaoGeralPage(contexto, id);
-			return visaoGeralPage.getTituloItemTrabalho();
-
-        } catch (final RuntimeException e) {
-            final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
-            if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
-                return recuperarTitulo(contexto, id);
-
-            } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
-                return "";
-
-            } else {
-                return null;
-
-            }
-        }
-	}
 
 	private List<TaskWeeklySummary> apropriate() {
 		final List<TaskWeeklySummary> twsApropriadas = new ArrayList<TaskWeeklySummary>();
@@ -450,7 +413,7 @@ public class Apropriator {
 	        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
 
 			for (final TaskWeeklySummary summary : tasksHandler.getWeeklySummary()) {
-	    		if (!apropriate(summary, null, null)) {
+	    		if (!apropriador.apropriar(summary, null, null)) {
 	    			break;
 	    		}
 	    		twsApropriadas.add(summary);
@@ -459,98 +422,16 @@ public class Apropriator {
 		return twsApropriadas;
 	}
 
-	private void initSelenium() {
-		final Config config = apropriationFile.getConfig();
-    	SeleniumSupport.initSelenium(config);
-	}
-
-    private boolean apropriate(TaskWeeklySummary summaryApropriando, TaskWeeklySummary summaryAntes, TaskWeeklySummary summaryDepois) {
-    	try {
-            final RastreamentoHorasPage apropriationPage = gotoApropriationPage(summaryApropriando);
-            progressInfo.setResumoApropriando(summaryApropriando);
-
-            if (apropriationPage.isTarefaAberta()) {
-            	apropriationPage.iniciarTarefa();
-            }
-
-            final Date dataInicio = summaryApropriando.getDataInicio();
-
-			apropriationPage.irParaSemana(dataInicio);
-            apropriationPage.criarLinhaTempoPadrao();
-
-            if (summaryDepois == null) {
-            	summaryAntes = apropriationPage.lerValoresLinhaTempo();
-            	summaryDepois = summaryAntes.somar(summaryApropriando);
-            }
-
-            progressInfo.setTempo(TipoTempo.ANTES, summaryAntes);
-            progressInfo.setTempo(TipoTempo.DEPOIS, summaryDepois);
-
-            apropriationPage.digitarMinutos(summaryDepois);
-            apropriationPage.salvarAlteracoes();
-
-            apropriationPage.irParaSemana(dataInicio);
-
-            final TaskWeeklySummary valoresLinhaTempoReais = apropriationPage.lerValoresLinhaTempo();
-			verificarApropriacoes(summaryDepois, valoresLinhaTempoReais);
-
-            summaryApropriando.setApropriado(true);
-            return true;
-
-        } catch (final RuntimeException e) {
-            final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
-            if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
-                progressInfo.setInfoMessage("Tentando apropriar novamente mesma atividade!!!");
-                return apropriate(summaryApropriando, summaryAntes, summaryDepois);
-
-            } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
-                return true;
-
-            } else {
-                return false;
-
-            }
-        }
-    }
-
     private String montarTitulo() {
         return "Apropriator v" + appVersion.get() + " - Macros" + getMacrosVersion();
     }
 
-    private void verificarApropriacoes(TaskWeeklySummary esperado, final TaskWeeklySummary reais) {
-
-        final StringBuilder erros = new StringBuilder();
-        for (final DaySummary daySummaryEsperado : esperado.getDaysSummary()) {
-        	final int diaSemana = daySummaryEsperado.getDay();
-			final DaySummary daySummaryReal = reais.getDaySummary(diaSemana);
-			if (!daySummaryEsperado.equals(daySummaryReal)) {
-        		erros.append(
-        				String.format(
-        						"Dia %s esperado %s encontrado %s\n",
-        						Util.nomeDiaSemana(diaSemana),
-        						Util.formatMinutesDecimal(daySummaryEsperado.getHoras()),
-        						Util.formatMinutesDecimal(daySummaryReal.getHoras())
-        				)
-        		);
-        	}
-        }
-        if (erros.length() > 0) {
-        	throw new IllegalStateException(
-        			"Deu algum problema na apropriação:" + erros.toString());
-        }
-    }
-
-    private void verificarFinalizarTarefasAtividades() {
-        verificarFinalizarAtividade();
-        verificarFinalizarTarefa();
-    }
-
-	private void verificarFinalizarAtividade() {
+    private void verificarFinalizarAtividade() {
 		final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
         final Collection<TaskSummary> summaryFinishedTasks = tasksHandler.getResumoAtividadesFinalizadas();
         for (final TaskSummary summary : summaryFinishedTasks) {
         	progressInfo.setInfoFinalizando(summary);
-        	if (!finalizarAtividade(summary)) {
+        	if (!finalizadorAtividade.finalizarAtividade(summary)) {
         		break;
         	}
         }
@@ -561,165 +442,20 @@ public class Apropriator {
 		final Collection<TaskSummary> summaryFinishedTasks = tasksHandler.getResumoTarefasFinalizadas();
 		for (final TaskSummary summary : summaryFinishedTasks) {
 			progressInfo.setInfoFinalizando(summary);
-			if (!finalizarTarefa(summary)) {
+			if (!finalizadorTarefa.finalizarTarefa(summary)) {
 				break;
 			}
 		}
 	}
 
-	private boolean finalizarAtividade(final TaskSummary summary) {
-		try {
-			final Task task = summary.getTask();
-			final Collection<Integer> idsAtividades = summary.getIdsAtividades();
-			if (idsAtividades.isEmpty()) {
-				final VisaoGeralPage visaoGeralPage = gotoVisaoGeralPage(
-						task.getContexto(), task.getItemTrabalho().getId());
-				visaoGeralPage.incluirComentarioFinalizacaoTarefa(summary);
-			} else {
-				for (final Integer id : idsAtividades) {
-					final VisaoGeralPage visaoGeralPage = gotoVisaoGeralPage(
-							task.getContexto(), id);
-					visaoGeralPage.finalizarTarefa(summary);
-				}
-			}
-			return true;
-
-        } catch (final RuntimeException e) {
-            final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
-            if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
-                return finalizarAtividade(summary);
-
-            } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
-                return true;
-
-            } else {
-                return false;
-
-            }
-        }
-	}
-
-	private boolean finalizarTarefa(final TaskSummary summary) {
-		try {
-			final Task task = summary.getTask();
-			final VisaoGeralPage visaoGeralPage = gotoVisaoGeralPage(
-					task.getContexto(), task.getItemTrabalho().getId());
-			visaoGeralPage.finalizarTarefa(summary);
-			return true;
-
-		} catch (final RuntimeException e) {
-			final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
-			if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
-				return finalizarAtividade(summary);
-
-			} else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
-				return true;
-
-			} else {
-				return false;
-
-			}
-		}
-	}
-
-    private RastreamentoHorasPage gotoApropriationPage(TaskWeeklySummary summary) {
-        final Alm alm = new Alm();
-        try {
-            return alm.gotoApropriationPage(
-            		summary.getContexto(), summary.getItemTrabalho().getId());
-        } catch (final NotLoggedInException e) {
-            doLogin();
-            return gotoApropriationPage(summary);
-        }
-    }
-
-    private VisaoGeralPage gotoVisaoGeralPage(String contexto, int id) {
-    	final Alm alm = new Alm();
-    	try {
-    		return alm.gotoVisaoGeralPage(
-    				contexto, id);
-    	} catch (final NotLoggedInException e) {
-    		doLogin();
-    		return gotoVisaoGeralPage(contexto, id);
-    	}
-    }
-
-    private void doLogin() {
-        final LoginPageAlm loginPage = new LoginPageAlm();
-        final String cpf = this.apropriationFile.getConfig().getCpf();
-        final String pwd;
-        if (lerSenhaSalva) {
-            pwd = readAlmSavedPassword();
-        } else {
-            final ReadPasswordWindow passwordWindow = new ReadPasswordWindow(
-                "Informe a nova senha",
-                "Não consegui me logar usando a senha atualmente salva." +
-                "\nTalvez a senha anterior esteja expirada.");
-            pwd = passwordWindow.getPassword();
-        }
-        loginPage.login(cpf, pwd);
-        writeAlmSavedPassword(loginPage.getLoginPassword());
-        lerSenhaSalva = false;
-    }
-
-    private enum OpcoesRecuperacaoAposErro {
-        TENTAR_NOVAMENTE, PROXIMA, TERMINAR;
-
-        @Override
-        public String toString() {
-            switch (this) {
-            case TENTAR_NOVAMENTE:
-                return "Tentar Novamente";
-            case PROXIMA:
-                return "Ir para a próxima";
-            default:
-                return "Terminar";
-            }
-        }
-    }
-
-    private OpcoesRecuperacaoAposErro stopAfterException(final RuntimeException e) {
-        e.printStackTrace();
-        final String message = "O seguinte erro ocorreu:\n" + e.getMessage() + "!";
-        final JTextArea textArea = new JTextArea(10, 60);
-        textArea.setText(message);
-        textArea.setEditable(false);
-        final JScrollPane scrollPane = new JScrollPane(textArea);
-
-        final Object[] options = {"Tentar Novamente",
-                            "Ir para próxima",
-                            "Terminar"};
-        final int n = JOptionPane.showOptionDialog(null,
-            scrollPane,
-            "Erro na apropriação",
-            JOptionPane.YES_NO_CANCEL_OPTION,
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            options,
-            options[0]);
-
-        return OpcoesRecuperacaoAposErro.values()[n];
-
-    }
-
     private String getMacrosVersion() {
-        return this.apropriationFile.getConfig().getMacrosVersion();
+        return getConfig().getMacrosVersion();
     }
 
-    private void writeAlmSavedPassword(String senha) {
-        if (senha != null) {
-            this.applicantionProperties.setProperty(CHAVE_SENHA_ALM_APP_PROPERTIES,
-                Cipher.cript(senha));
-        }
-    }
+	private Config getConfig() {
+		return appContext.getConfig();
+	}
 
-    private String readAlmSavedPassword() {
-        final String pwdCripto = this.applicantionProperties.getProperty(
-            CHAVE_SENHA_ALM_APP_PROPERTIES);
-        if (pwdCripto != null) {
-            return Cipher.uncript(pwdCripto);
-        }
-        return null;
-    }
+
 
 }

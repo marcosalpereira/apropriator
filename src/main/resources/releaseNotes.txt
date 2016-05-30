@@ -1,3 +1,9 @@
+Versão 2.5
+    - Analisar horários "estranhos" 
+    
+Versão 2.4
+	- Atualização selenium para executar no novo firefox
+	
 Versão 2.3
 	- Mudança nas macros (v1.9) para abrir varios itens de trabalho no browser;
 	- Possibilidade recuperar titulos dos itens de trabalho;

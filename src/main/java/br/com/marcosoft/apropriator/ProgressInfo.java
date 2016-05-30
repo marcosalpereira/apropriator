@@ -364,10 +364,20 @@ public class ProgressInfo extends JFrame implements ActionListener, Progress {
 	public void setInfoFinalizando(TaskSummary summary) {
   		setInfoMessage("Finalizando Tarefa:"
   					+ summary.getTask().getItemTrabalho()
+  					+ " "
   					+ summary.getComentario());
   		panBody.setVisible(false);
   		changeSize(MIN_SIZE);
     }
+
+	public void setInfoRecuperandoTitulos(String contexto, Integer id) {
+		setInfoMessage("Recuperando Título:"
+				+ contexto
+				+ " "
+				+ id);
+		panBody.setVisible(false);
+		changeSize(MIN_SIZE);
+	}
 
     public void setTempo(TipoTempo tipoTempo, TaskWeeklySummary summary) {
         setTempo(tipoTempo.ordinal() + 1, summary);

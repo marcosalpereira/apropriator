@@ -45,11 +45,15 @@ public class Version implements Comparable<Version> {
         }
         return 0;
     }
-    
+
     @Override
     public String toString() {
     	return version;
     }
+
+	public boolean gt(Version that) {
+		return this.compareTo(that) > 0;
+	}
 
 
 }
