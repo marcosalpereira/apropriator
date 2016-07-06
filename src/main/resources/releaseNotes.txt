@@ -1,5 +1,5 @@
 Versão 2.5
-    - Analisar horários "estranhos" 
+    - Atualização das macros para codificar a url de abertura do item de trabalho para funcionar corretamente no windows
     
 Versão 2.4
 	- Atualização selenium para executar no novo firefox

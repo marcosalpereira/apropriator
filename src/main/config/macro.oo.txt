@@ -17,6 +17,7 @@
 '1.7 - Opcao para abrir item de trabalho
 '1.8 - Abrir varios itens de trabalho no browser
 '1.9 - Possibilidade recuperar titulos dos itens de trabalho; 
+'1.10 - fazer escape da url de abrir browser com item de trabalho
 
 Const VERSION = "1.9"
 
@@ -472,7 +473,7 @@ montarUrl = "https://alm.serpro/ccm/web/projects/" & webEncode(ctx) & "#action=c
 End Sub
 
 Sub webEncode(str as String) as String
-	webEncode = str
+	webEncode = replace(str, " ", "%20")
 End Sub
 
 Sub getJarFile(sCurrDir as String) as String
@@ -671,3 +672,4 @@ Function Replace(Source As String, Search As String, NewPart As String)
   Result = join(split(Source, Search), NewPart)
   Replace = Result
 End Function
+
