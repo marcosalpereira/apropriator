@@ -45,6 +45,8 @@ public class ApropriationFile extends BaseModel {
 
         public static final String LOGIN_SALVAR_SENHA = "login.salvar.senha";
 
+        public static final String CONTINUAR_APOS_ERRO = "continuarAposErro";
+
         public void setProperty(String key, String value) {
             if (key == null || key.trim().length() == 0)
                 return;
@@ -72,6 +74,13 @@ public class ApropriationFile extends BaseModel {
             if (parent == null)
                 return ".";
             return parent;
+        }
+
+        public boolean isContinuarAposErro() {
+        	final String continuarAposErro = System.getProperty(CONTINUAR_APOS_ERRO);
+			return continuarAposErro == null
+					|| continuarAposErro.toUpperCase().matches("YES|SIM|1");
+
         }
 
         public String getMacrosVersion() {

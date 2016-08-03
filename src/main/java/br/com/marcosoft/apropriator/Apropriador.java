@@ -10,11 +10,42 @@ import br.com.marcosoft.apropriator.util.Util;
 
 public class Apropriador extends BaseSeleniumControler {
 
+	public static class RetornoApropriacao {
+		private final boolean pararProcesso;
+		private final String mensagemErro;
+
+		public RetornoApropriacao() {
+			this(null);
+		}
+
+		public RetornoApropriacao(String mensagemErro) {
+			this(mensagemErro, false);
+		}
+
+		public RetornoApropriacao(String mensagemErro, boolean pararProcesso) {
+			this.mensagemErro = mensagemErro;
+			this.pararProcesso = pararProcesso;
+		}
+
+		public boolean deuErro() {
+			return mensagemErro != null;
+		}
+
+		public boolean isPararProcesso() {
+			return pararProcesso;
+		}
+
+		public String getMensagemErro() {
+			return mensagemErro;
+		}
+
+	}
+
 	public Apropriador(AppContext appContext) {
 		super(appContext);
 	}
 
-    public boolean apropriar(TaskWeeklySummary summaryApropriando, TaskWeeklySummary summaryAntes, TaskWeeklySummary summaryDepois) {
+    public RetornoApropriacao apropriar(TaskWeeklySummary summaryApropriando, TaskWeeklySummary summaryAntes, TaskWeeklySummary summaryDepois) {
     	try {
     		final ProgressInfo progressInfo = getProgressInfo();
 
@@ -47,19 +78,24 @@ public class Apropriador extends BaseSeleniumControler {
 			verificarApropriacoes(summaryDepois, valoresLinhaTempoReais);
 
             summaryApropriando.setApropriado(true);
-            return true;
+            return new RetornoApropriacao();
 
         } catch (final RuntimeException e) {
+        	final String mensagem = String.format(
+        			"%s ao apropriar %s", e.getMessage(), summaryApropriando.getItemTrabalho());
+            if (appContext.getConfig().isContinuarAposErro()) {
+				return new RetornoApropriacao(mensagem);
+            }
             final OpcoesRecuperacaoAposErro opcao = stopAfterException(e);
             if (opcao == OpcoesRecuperacaoAposErro.TENTAR_NOVAMENTE) {
                 getProgressInfo().setInfoMessage("Tentando apropriar novamente mesma atividade!!!");
                 return apropriar(summaryApropriando, summaryAntes, summaryDepois);
 
             } else if (opcao == OpcoesRecuperacaoAposErro.PROXIMA) {
-                return true;
+            	return new RetornoApropriacao();
 
             } else {
-                return false;
+            	return new RetornoApropriacao(mensagem, true);
 
             }
         }

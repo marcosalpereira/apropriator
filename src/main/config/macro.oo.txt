@@ -18,8 +18,9 @@
 '1.8 - Abrir varios itens de trabalho no browser
 '1.9 - Possibilidade recuperar titulos dos itens de trabalho; 
 '1.10 - fazer escape da url de abrir browser com item de trabalho
+'1.11 - Mostrar mensagems de erro durante as apropriacoes
 
-Const VERSION = "1.9"
+Const VERSION = "1.11"
 
 
 Const COL_REG = 0
@@ -548,6 +549,8 @@ Sub importReturnFile(inputFileName as String)
             setText CInt(aLine(1)), CInt(aLine(2)), aLine(3)
         ElseIf (aLine(0) = "prj") Then
             atualizarProjetos aLine(1)
+        ElseIf (aLine(0) = "err") Then
+            MsgBox aLine(1)
         End if
      End if
   Loop

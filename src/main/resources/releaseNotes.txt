@@ -1,3 +1,7 @@
+Versão 2.6
+    - Alterado comportamento padrão para nao parar quando ocorrer algum erro na apropriação.
+    - Atualização das macros para mostrar mensagens de erro na apropriacao.
+
 Versão 2.5
     - Atualização das macros para codificar a url de abertura do item de trabalho para funcionar corretamente no windows
     

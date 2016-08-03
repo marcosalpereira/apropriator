@@ -1,0 +1,20 @@
+<html>
+<p>
+<u><b>ATENÇÃO</b></u>
+</p>
+
+<p>Teve uma alteração no código das macros para mostrar as mensagens de erro.</p>
+<p>	Para atualizar é bem fácil:</p>
+<ol>
+	<li> Use a Opção do Menu do BrOffice: Ferramentas -> Macros -> Organizar macros -> LibreOffice Basic</li>
+	<li> Na caixa de diálogos "Macros do LibreOffice Basic": 
+	   No painel "Macro de" selecione o item da árvore "apropriacao.ods > Standard > Module1"
+	   Clique no botão editar.</li>
+	<li> Substitua todo o conteúdo mostrado no editor de macros pelo 
+         conteúdo do arquivo "macro.oo.txt" que fica na mesma pasta da planilha de apropriação.<li>
+	<li> pronto! </li>
+<ol/>   
+
+<p>Att Apropriator team</p>
+
+</html>

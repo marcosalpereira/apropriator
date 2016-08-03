@@ -54,6 +54,9 @@ public class Version implements Comparable<Version> {
 	public boolean gt(Version that) {
 		return this.compareTo(that) > 0;
 	}
+	public boolean lt(Version that) {
+		return this.compareTo(that) < 0;
+	}
 
 
 }

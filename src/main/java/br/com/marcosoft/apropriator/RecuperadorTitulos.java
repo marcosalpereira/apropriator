@@ -52,12 +52,12 @@ public class RecuperadorTitulos extends BaseSeleniumControler {
 	}
 
 	private String recuperarTitulo(String contexto, Integer id) {
-		getProgressInfo().setInfoRecuperandoTitulos(contexto, id);
 		final String chave = contexto + id;
 		final String titulo = jaRecuperadas.get(chave);
 		if (titulo != null) {
 			return titulo;
 		}
+		getProgressInfo().setInfoRecuperandoTitulos(contexto, id);
 
 		try {
 			final VisaoGeralPage visaoGeralPage =

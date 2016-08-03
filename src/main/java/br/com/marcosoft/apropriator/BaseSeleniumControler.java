@@ -21,10 +21,6 @@ public abstract class BaseSeleniumControler {
 
 	protected final AppContext appContext;
 
-    private final ApplicationProperties applicantionProperties =
-    		new ApplicationProperties("sgiApropriator");
-
-
     public BaseSeleniumControler (AppContext appContext) {
     	this.appContext = appContext;
     }
@@ -61,13 +57,17 @@ public abstract class BaseSeleniumControler {
 
 	private void writeAlmSavedPassword(String senha) {
         if (senha != null) {
-            this.applicantionProperties.setProperty(CHAVE_SENHA_ALM_APP_PROPERTIES,
+            getApplicationProperties().setProperty(CHAVE_SENHA_ALM_APP_PROPERTIES,
                 Cipher.cript(senha));
         }
     }
 
+	private ApplicationProperties getApplicationProperties() {
+		return appContext.getApplicationProperties();
+	}
+
     private String readAlmSavedPassword() {
-        final String pwdCripto = this.applicantionProperties.getProperty(
+        final String pwdCripto = getApplicationProperties().getProperty(
             CHAVE_SENHA_ALM_APP_PROPERTIES);
         if (pwdCripto != null) {
             return Cipher.uncript(pwdCripto);

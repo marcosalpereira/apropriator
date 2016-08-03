@@ -24,6 +24,7 @@ import javax.swing.JTextPane;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
+import br.com.marcosoft.apropriator.Apropriador.RetornoApropriacao;
 import br.com.marcosoft.apropriator.model.ApropriationFile;
 import br.com.marcosoft.apropriator.model.ApropriationFile.Config;
 import br.com.marcosoft.apropriator.model.TaskRecord;
@@ -42,7 +43,11 @@ import br.com.marcosoft.apropriator.util.Version;
  */
 public class Apropriator {
 
+	private static final Version VERSION_1_5 = new Version("1.5");
+	private static final Version VERSION_1_11 = new Version("1.11");
+
 	private final Version appVersion;
+	private Version macrosVersion;
 
 	private final ProgressInfo progressInfo;
 
@@ -51,20 +56,30 @@ public class Apropriator {
 	private final FinalizadorAtividade finalizadorAtividade;
 	private final FinalizadorTarefa finalizadorTarefa;
 
+	private final List<String> errosApropriacao = new ArrayList<String>();
+
     public static void main(final String[] args) {
-    	final Apropriator apropriator = new Apropriator();
-    	final Arguments arguments = Arguments.parse(args);
-    	try {
-	        apropriator.handleSoftwareUpdate(arguments);
-	        apropriator.doItForMePlease(arguments.getCsvFile());
-        } catch (final Throwable e) {
-            showInfoMessage("Um erro inesperado ocorreu!" + e.getClass().getName() + "\n" + e.getMessage());
-            apropriator.gravarArquivoRetornoErro(e, arguments.getCsvFile());
-            e.printStackTrace();
-        } finally {
-        	apropriator.progressInfo.dispose();
-        }
+    	new Apropriator().main(Arguments.parse(args));
     }
+
+	private void main(final Arguments arguments) {
+		try {
+	        handleSoftwareUpdate(arguments);
+	        doItForMePlease(arguments.getCsvFile());
+        } catch (final Throwable e) {
+        	e.printStackTrace();
+        	if (macrosNaoMostramMensagemErro()) {
+        		showInfoMessage(e.getMessage());
+        	}
+            gravarArquivoRetornoErro(e, arguments.getCsvFile());
+        } finally {
+        	progressInfo.dispose();
+        }
+	}
+
+	private boolean macrosNaoMostramMensagemErro() {
+		return macrosVersion == null || macrosVersion.lt(VERSION_1_11);
+	}
 
 	private void showReleaseNotes() {
 		final String releaseNotesKey = "last-version";
@@ -129,7 +144,7 @@ public class Apropriator {
 
 	private static void showInfoMessage(final String conteudo) {
 		final Component c = new JScrollPane(new JTextArea(conteudo, 10, 70));
-		JOptionPane.showMessageDialog(null, c, "Release Notes", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, c, "Apropriator", JOptionPane.INFORMATION_MESSAGE);
 	}
 
     private boolean isUpdateDisabled() {
@@ -205,8 +220,8 @@ public class Apropriator {
         final ApropriationFileParser apropriationFileParser = new ApropriationFileParser(inputFile);
         try {
             apropriationFile = apropriationFileParser.parse();
-
             appContext.setApropriationFile(apropriationFile);
+			macrosVersion = new Version(apropriationFile.getConfig().getMacrosVersion());
         } catch (final IOException e) {
             throw new ApropriationException(e);
         }
@@ -218,13 +233,11 @@ public class Apropriator {
      * @throws ApropriationException
      */
     private void verificarCompatibilidade() throws ApropriationException {
-        final String strVersion = getMacrosVersion();
-        if (strVersion == null) {
+        if (macrosVersion == null) {
             return;
         }
-        final double version = Double.parseDouble(strVersion);
-        if (version < 1.5) {
-            throw new ApropriationException("Não sei tratar arquivos na versão:" + strVersion);
+        if (macrosVersion.lt(VERSION_1_5)) {
+            throw new ApropriationException("Não sei tratar arquivos na versão:" + macrosVersion);
         }
     }
 
@@ -280,6 +293,11 @@ public class Apropriator {
         out.println(String.format("alv|%d|Atividade", colunaFinalizar));
         out.println(String.format("alv|%d|Tarefa", colunaFinalizar));
         out.println(String.format("alv|%d|Atividade/Tarefa", colunaFinalizar));
+
+        //Dump erros
+        for (final String erro : errosApropriacao) {
+        	out.println("err|" + erro);
+        }
 
         out.close();
 
@@ -411,9 +429,13 @@ public class Apropriator {
 		final List<TaskWeeklySummary> twsApropriadas = new ArrayList<TaskWeeklySummary>();
 		if (!this.apropriationFile.isCaptureInfo()) {
 	        final TasksHandler tasksHandler = this.apropriationFile.getTasksHandler();
-
-			for (final TaskWeeklySummary summary : tasksHandler.getWeeklySummary()) {
-	    		if (!apropriador.apropriar(summary, null, null)) {
+			final List<TaskWeeklySummary> weeklySummary = tasksHandler.getWeeklySummary();
+			for (final TaskWeeklySummary summary : weeklySummary) {
+				final RetornoApropriacao retornoApropriacao = apropriador.apropriar(summary, null, null);
+				if (retornoApropriacao.deuErro()) {
+					errosApropriacao.add(retornoApropriacao.getMensagemErro());
+				}
+	    		if (retornoApropriacao.isPararProcesso()) {
 	    			break;
 	    		}
 	    		twsApropriadas.add(summary);
@@ -423,7 +445,7 @@ public class Apropriator {
 	}
 
     private String montarTitulo() {
-        return "Apropriator v" + appVersion.get() + " - Macros" + getMacrosVersion();
+        return "Apropriator v" + appVersion.get() + " - Macros" + macrosVersion;
     }
 
     private void verificarFinalizarAtividade() {
@@ -447,10 +469,6 @@ public class Apropriator {
 			}
 		}
 	}
-
-    private String getMacrosVersion() {
-        return getConfig().getMacrosVersion();
-    }
 
 	private Config getConfig() {
 		return appContext.getConfig();
