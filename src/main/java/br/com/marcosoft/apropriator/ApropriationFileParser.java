@@ -101,6 +101,10 @@ public class ApropriationFileParser {
             throw new IOException(
                 "Erro lendo as atividades. Quantidade de campos difere da esperada!");
         }
+        if (fields[POS_REG_ITEM_TRABALHO].trim().length() == 0) {
+        	return;
+        }
+
         final int duracao = Integer.parseInt(fields[POS_REG_DURACAO_MIN], 10);
 
         numeroLinha =  Integer.parseInt(fields[POS_REG_NUMERO_LINHA], 10);
