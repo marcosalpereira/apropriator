@@ -71,7 +71,7 @@ public class Apropriator {
         	if (macrosNaoMostramMensagemErro()) {
         		showInfoMessage(e.getMessage());
         	}
-            gravarArquivoRetornoErro(e, arguments.getCsvFile());
+            gravarArquivoRetornoErro(e.getMessage(), arguments.getCsvFile());
         } finally {
         	progressInfo.dispose();
         }
@@ -213,6 +213,8 @@ public class Apropriator {
         verificarCompatibilidade();
         if (registrosApropriacoesIntegros()) {
         	tratarArquivoApropriacao();
+        } else {
+        	gravarArquivoRetornoErro("Registros inconsistentes", inputFile);
         }
     }
 
@@ -241,7 +243,7 @@ public class Apropriator {
         }
     }
 
-    private void gravarArquivoRetornoErro(Throwable erro, File inputFile) {
+    private void gravarArquivoRetornoErro(String erro, File inputFile) {
         String exportFolder = inputFile.getParent();
         if (exportFolder == null) exportFolder = ".";
 
@@ -253,7 +255,7 @@ public class Apropriator {
             showInfoMessage("Nao consegui gravar arquivo retorno!\n" + e.getMessage());
             return;
         }
-        out.println("err|" + erro.getMessage());
+        out.println("err|" + erro);
         out.close();
     }
 

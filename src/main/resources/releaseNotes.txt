@@ -1,3 +1,6 @@
+Versão 2.9
+    - Correção de erro na análise de registros inconsistentes - gravar arquivo de retorno.
+    
 Versão 2.8
     - Correção de erro na análise de registros inconsistentes.
 
