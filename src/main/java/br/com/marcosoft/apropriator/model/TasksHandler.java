@@ -101,16 +101,16 @@ public class TasksHandler extends BaseModel {
     }
 
     private Collection<TaskRecord> selecionarRegistrosComTarefasNaoApropriadas() {
-        final Set<Task> taskNaoRegistradas = new LinkedHashSet<Task>();
+        final Set<Date> diasTarefasPendentes = new LinkedHashSet<Date>();
         final List<TaskRecord> pendentes = selecionarRegistrosPendentesApropriacao();
 		for (final TaskRecord taskRecord : pendentes) {
-			taskNaoRegistradas.add(taskRecord.getTask());
+			diasTarefasPendentes.add(taskRecord.getData());
         }
 
         final Collection<TaskRecord> ret = new ArrayList<TaskRecord>();
-        for (final TaskRecord task : pendentes) {
-            if (taskNaoRegistradas.contains(task)) {
-                ret.add(task);
+        for (final TaskRecord taskRecord : taskRecords) {
+            if (diasTarefasPendentes.contains(taskRecord.getData())) {
+                ret.add(taskRecord);
             }
         }
         return ret;

@@ -335,8 +335,8 @@ public class Apropriator {
             }
             sb.append(
                 String.format(
-                    "Na data %s o total apropriado é %d",
-                        Util.DD_MM_YY_FORMAT.format(entry.getKey()), entry.getValue()));
+                    "Na data %s o total registrado foi %d (%s)",
+                        Util.DD_MM_YY_FORMAT.format(entry.getKey()), entry.getValue(), Util.formatMinutes(entry.getValue())));
         }
 
         final Config config = getConfig();
