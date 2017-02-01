@@ -8,20 +8,20 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.marcosoft.lib.ApplicationProperties;
 
-import br.com.marcosoft.apropriator.util.ApplicationProperties;
 
 public class ApplicationPropertiesTest {
 
     @Test
     public void testApplicationProperties() throws IOException {
-        ApplicationProperties app = new ApplicationProperties("test");
+        final ApplicationProperties app = new ApplicationProperties("test");
         app.setProperty("key", "value");
 
-        String fileName = System.getProperty("user.home") + File.separator
+        final String fileName = System.getProperty("user.home") + File.separator
                 + ".test" + File.separator + "application.properties";
-        File file = new File(fileName);
-        BufferedReader input = new BufferedReader(new FileReader(file));
+        final File file = new File(fileName);
+        final BufferedReader input = new BufferedReader(new FileReader(file));
 
         String line = null;
         while ((line = input.readLine()) != null) {

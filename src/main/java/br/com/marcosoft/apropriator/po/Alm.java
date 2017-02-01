@@ -17,16 +17,15 @@ public class Alm extends PageObject {
         return new RastreamentoHorasPage();
     }
 
-	private void tratarProblemaNaoReconhecimentoCamposPagina(
-			final WebDriver driver) {
-		driver.get("about:blank");
+    private void tratarProblemaNaoReconhecimentoCamposPagina(final WebDriver driver) {
+        driver.get("about:blank");
         try {
-        	driver.switchTo().alert().accept();
+            driver.switchTo().alert().accept();
         } catch (final NoAlertPresentException e) {
 
         }
-        sleep(1000);
-	}
+        //sleep(500);
+    }
 
     public VisaoGeralPage gotoVisaoGeralPage(String contexto, int id) throws NotLoggedInException {
         if (LoginPageAlm.isOnLoginPage()) {

@@ -2,11 +2,11 @@ package br.com.marcosoft.apropriator.po;
 
 import java.util.List;
 
+import org.marcosoft.lib.Condition;
+import org.marcosoft.lib.WaitWindow;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import br.com.marcosoft.apropriator.Condition;
-import br.com.marcosoft.apropriator.WaitWindow;
 import br.com.marcosoft.apropriator.selenium.SeleniumSupport;
 
 public class FindElement {
@@ -78,7 +78,7 @@ public class FindElement {
     public static ElementCondition isEnabled() {
         return new ElementCondition() {
             public boolean isTrue(WebElement element) {
-                return element.isEnabled();
+                return element.isDisplayed() && element.isEnabled();
             }
         };
     }

@@ -1,48 +1,52 @@
-Vers√£o 2.9
-    - Corre√ß√£o de erro na an√°lise de registros inconsistentes - gravar arquivo de retorno.
-    
-Vers√£o 2.8
-    - Corre√ß√£o de erro na an√°lise de registros inconsistentes.
+Vers„o 2.10
+    - Usar update site no AMBDES;
+    - N„o verficar integridade dos registros na recuperaÁ„o de tÌtulos;
 
-Vers√£o 2.7
-    - Ignorar linhas com itens de trabalho ainda n√£o preenchidos.
-	
-Vers√£o 2.6
-    - Alterado comportamento padr√£o para nao parar quando ocorrer algum erro na apropria√ß√£o.
-    - Atualiza√ß√£o das macros para mostrar mensagens de erro na apropriacao.
-
-Vers√£o 2.5
-    - Atualiza√ß√£o das macros para codificar a url de abertura do item de trabalho para funcionar corretamente no windows
+Vers„o 2.9 
+    - CorreÁ„o de erro na an·lise de registros inconsistentes - gravar arquivo de retorno.
     
-Vers√£o 2.4
-	- Atualiza√ß√£o selenium para executar no novo firefox
-	
-Vers√£o 2.3
-	- Mudan√ßa nas macros (v1.9) para abrir varios itens de trabalho no browser;
-	- Possibilidade recuperar titulos dos itens de trabalho;
+Vers„o 2.8
+    - CorreÁ„o de erro na an·lise de registros inconsistentes.
 
-Vers√£o 2.2
-	- Mostrar os dados sendo apropriados corretamente, estava mostrando os dados anteriores. 
-	
-Vers√£o 2.1
-    - Mudan√ßa apenas nas macros para possibilitar abrir um item de trabalho apartir da planilha
+Vers„o 2.7
+    - Ignorar linhas com itens de trabalho ainda n„o preenchidos.
     
-Vers√£o 2.0
-    - Altera√ß√£o no c√≥digo das macros para encontrar a vers√£o mais nova do jar.
+Vers„o 2.6
+    - Alterado comportamento padr„o para nao parar quando ocorrer algum erro na apropriaÁ„o.
+    - AtualizaÁ„o das macros para mostrar mensagens de erro na apropriacao.
+
+Vers„o 2.5
+    - AtualizaÁ„o das macros para codificar a url de abertura do item de trabalho para funcionar corretamente no windows
+    
+Vers„o 2.4
+    - AtualizaÁ„o selenium para executar no novo firefox
+    
+Vers„o 2.3
+    - MudanÁa nas macros (v1.9) para abrir varios itens de trabalho no browser;
+    - Possibilidade recuperar titulos dos itens de trabalho;
+
+Vers„o 2.2
+    - Mostrar os dados sendo apropriados corretamente, estava mostrando os dados anteriores. 
+    
+Vers„o 2.1
+    - MudanÁa apenas nas macros para possibilitar abrir um item de trabalho apartir da planilha
+    
+Vers„o 2.0
+    - AlteraÁ„o no cÛdigo das macros para encontrar a vers„o mais nova do jar.
     - Finalizar um item de backlog
     - Avisar mensagens importantes
     
     
-Vers√£o 1.9
+Vers„o 1.9
     - Iniciar uma tarefa/defeito se ainda nao estiver em andamento
     
-Vers√£o 1.8
-	- N√£o obrigar descri√ß√£o para um item de trabalho "123;foo" pode ser apenas "123"
-	- Op√ß√£o para finalizar uma tarefa ou uma atividade ou ambos.
-	  Criada as opcoes na coluna finalizar: Tarefa, Atividade e Atividade/Tarefa.
-	  Tarefa - coloca a tarefa como finalizada;
-	  Atividade - se na descricao da atividade for na forma "id,id,...-descricao" Ex: "123,456-foo" ou "123-foo"
-	              o sistema ir√° finalizar cada um dos itens da lista; Se o item n√£o for possivel
-	              finalizar, coloca um comentario na discuss√£o da tarefa.
-	  Atividade/Tarefa - ir√° fazer os dois itens especificados acima
-	- Mostrar as altera√ß√µes da release.  
+Vers„o 1.8
+    - N„o obrigar descriÁ„o para um item de trabalho "123;foo" pode ser apenas "123"
+    - OpÁ„o para finalizar uma tarefa ou uma atividade ou ambos.
+      Criada as opcoes na coluna finalizar: Tarefa, Atividade e Atividade/Tarefa.
+      Tarefa - coloca a tarefa como finalizada;
+      Atividade - se na descricao da atividade for na forma "id,id,...-descricao" Ex: "123,456-foo" ou "123-foo"
+                  o sistema ir· finalizar cada um dos itens da lista; Se o item n„o for possivel
+                  finalizar, coloca um comentario na discuss„o da tarefa.
+      Atividade/Tarefa - ir· fazer os dois itens especificados acima
+    - Mostrar as alteraÁıes da release.  

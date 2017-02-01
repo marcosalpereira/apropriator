@@ -1,33 +1,33 @@
 <html>
 
 <h2>
-ATEN√á√ÉO - Atualiza√ß√£o para adicionar um bot√£o para abrir itens de trabalho diretamente da planilha</b></u>
+ATEN«√O - AtualizaÁ„o para adicionar um bot„o para abrir itens de trabalho diretamente da planilha</b></u>
 </h2>
 
-<p>Para atualizar √© bem f√°cil:</p>
+<p>Para atualizar È bem f·cil:</p>
 <ol>
-	<li> Use a Op√ß√£o do Menu do BrOffice: Ferramentas -> Macros -> Organizar macros -> LibreOffice Basic</li>
-	<li> Na caixa de di√°logos "Macros do LibreOffice Basic": 
-	   No painel "Macro de" selecione o item da √°rvore "apropriacao.ods > Standard > Module1"
-	   Clique no bot√£o editar.</li>
-	<li> Substitua todo o conte√∫do mostrado no editor de macros pelo conte√∫do do arquivo
-		 "macro.oo.txt" que fica na mesma pasta da planilha de apropria√ß√£o.</li>
-	<li> pronto! </li>
+    <li> Use a OpÁ„o do Menu do BrOffice: Ferramentas -> Macros -> Organizar macros -> LibreOffice Basic</li>
+    <li> Na caixa de di·logos "Macros do LibreOffice Basic": 
+       No painel "Macro de" selecione o item da ·rvore "apropriacao.ods > Standard > Module1"
+       Clique no bot„o editar.</li>
+    <li> Substitua todo o conte˙do mostrado no editor de macros pelo conte˙do do arquivo
+         "macro.oo.txt" que fica na mesma pasta da planilha de apropriaÁ„o.</li>
+    <li> pronto! </li>
 </ol>
 
-<p>Para configurar um bot√£o na barra de ferramentas da planilha de apropria√ß√£o para 
-abrir um item de trabalho especificado na columa "Item de Trabalho" ou "Coment√°rio" fa√ßa:</p>
+<p>Para configurar um bot„o na barra de ferramentas da planilha de apropriaÁ„o para 
+abrir um item de trabalho especificado na columa "Item de Trabalho" ou "Coment·rio" faÁa:</p>
 <ol>
-	<li>Use a Op√ß√£o do Menu do BrOffice: Ferramentas -> Personalizar</li>
-	<li>Na aba de "Barra de Ferramentas" Selecione no campo "Barra de Ferramentas" selecione "Apropriator"</li>
-	<li>Use o bot√£o "Adicionar..."</li>
-	<li>No Dialogo "Adicionar Comandos" selecione na lista de categorias: "Macros do LibreOffice -> apropriacao.ods -> Standard -> Module1</li>
-	<li>Na lista "Comandos" selecione "abrir" e clique no bot√£o adicionar. Se desejar pode customizar o nome do bot√£o como desejado</li>
-	<li>Use o bot√£o "OK"</li>
+    <li>Use a OpÁ„o do Menu do BrOffice: Ferramentas -> Personalizar</li>
+    <li>Na aba de "Barra de Ferramentas" Selecione no campo "Barra de Ferramentas" selecione "Apropriator"</li>
+    <li>Use o bot„o "Adicionar..."</li>
+    <li>No Dialogo "Adicionar Comandos" selecione na lista de categorias: "Macros do LibreOffice -> apropriacao.ods -> Standard -> Module1</li>
+    <li>Na lista "Comandos" selecione "abrir" e clique no bot„o adicionar. Se desejar pode customizar o nome do bot„o como desejado</li>
+    <li>Use o bot„o "OK"</li>
 </ol>
 
-<p>Para usar o bot√£o rec√©m criado, selecione uma c√©lula da coluna "Item de Trabalho" ou "Coment√°rio" e use o bot√£o rec√©m criado
-para abrir no browser o item com o id especificado na c√©lula</p>  
+<p>Para usar o bot„o recÈm criado, selecione uma cÈlula da coluna "Item de Trabalho" ou "Coment·rio" e use o bot„o recÈm criado
+para abrir no browser o item com o id especificado na cÈlula</p>  
 
 
 <p>Att Apropriator</p>

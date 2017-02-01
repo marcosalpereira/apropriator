@@ -2,7 +2,6 @@ package br.com.marcosoft.apropriator;
 
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,10 +18,11 @@ import java.util.jar.Manifest;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.marcosoft.lib.App;
+import org.marcosoft.lib.ApplicationProperties;
+import org.marcosoft.lib.SoftwareUpdate;
+import org.marcosoft.lib.Version;
 
 import br.com.marcosoft.apropriator.Apropriador.RetornoApropriacao;
 import br.com.marcosoft.apropriator.model.ApropriationFile;
@@ -32,16 +32,12 @@ import br.com.marcosoft.apropriator.model.TaskSummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
 import br.com.marcosoft.apropriator.model.TasksHandler;
 import br.com.marcosoft.apropriator.selenium.SeleniumSupport;
-import br.com.marcosoft.apropriator.util.ApplicationProperties;
-import br.com.marcosoft.apropriator.util.Exec;
-import br.com.marcosoft.apropriator.util.SoftwareUpdate;
 import br.com.marcosoft.apropriator.util.Util;
-import br.com.marcosoft.apropriator.util.Version;
 
 /**
  * Apropriar SGI.
  */
-public class Apropriator {
+public class Apropriator extends App {
 
 	private static final Version VERSION_1_5 = new Version("1.5");
 	private static final Version VERSION_1_11 = new Version("1.11");
@@ -59,12 +55,13 @@ public class Apropriator {
 	private final List<String> errosApropriacao = new ArrayList<String>();
 
     public static void main(final String[] args) {
-    	new Apropriator().main(Arguments.parse(args));
+    	new Apropriator(args).main();
     }
 
-	private void main(final Arguments arguments) {
+	private void main() {
+	    final Arguments arguments = Arguments.parse(getArgs());
 		try {
-	        handleSoftwareUpdate(arguments);
+		    SoftwareUpdate.update(this, progressInfo);
 	        doItForMePlease(arguments.getCsvFile());
         } catch (final Throwable e) {
         	e.printStackTrace();
@@ -81,95 +78,13 @@ public class Apropriator {
 		return macrosVersion == null || macrosVersion.lt(VERSION_1_11);
 	}
 
-	private void showReleaseNotes() {
-		final String releaseNotesKey = "last-version";
-		final Version lastVersion = getLastExecutedVersion(releaseNotesKey);
-		getApplicantionProperties().setProperty(releaseNotesKey, appVersion.get());
-		if (!appVersion.gt(lastVersion)) {
-			return;
-		}
-		try {
-			final InputStream stream = getClass()
-					.getClassLoader().getResourceAsStream("releaseNotes.txt");
-			final List<?> lines = IOUtils.readLines(stream, "UTF-8");
-			final String conteudo = StringUtils.join(lines, '\n');
-			showInfoMessage(conteudo);
-		} catch (final IOException e) {
-		}
-	}
-
-	private Version getLastExecutedVersion(final String releaseNotesKey) {
-		final String property = getApplicantionProperties().getProperty(releaseNotesKey);
-		try {
-			return new Version(property);
-		} catch (final IllegalArgumentException e) {
-			return null;
-		}
-	}
-
-	private void showWarnMessage() {
-		final String warnMessageKey = "last-version-warn-message";
-		final Version lastVersion = getLastExecutedVersion(warnMessageKey);
-		getApplicantionProperties().setProperty(warnMessageKey, appVersion.get());
-
-		if (!appVersion.gt(lastVersion)) {
-			return;
-		}
-
-		try {
-			final String fileName = String.format("mensagemImportante-%s.txt", appVersion.get());
-			final InputStream stream = getClass()
-					.getClassLoader().getResourceAsStream(fileName);
-			if (stream != null) {
-				final List<?> lines = IOUtils.readLines(stream, "UTF-8");
-				final String conteudo = StringUtils.join(lines, "");
-				showWarnMessage(conteudo);
-			}
-		} catch (final IOException e) {
-		}
-	}
-
-	private ApplicationProperties getApplicantionProperties() {
-		return appContext.getApplicationProperties();
-	}
-
-	private static void showWarnMessage(final String conteudo) {
-		final JTextPane textArea = new JTextPane();
-		textArea.setContentType("text/html");
-		textArea.setText(conteudo);
-		textArea.setPreferredSize(new Dimension(650, 300));
-		final Component c = new JScrollPane(textArea);
-		JOptionPane.showMessageDialog(null, c, "Mensagem Importante", JOptionPane.WARNING_MESSAGE);
-	}
-
 	private static void showInfoMessage(final String conteudo) {
 		final Component c = new JScrollPane(new JTextArea(conteudo, 10, 70));
 		JOptionPane.showMessageDialog(null, c, "Apropriator", JOptionPane.INFORMATION_MESSAGE);
 	}
 
-    private boolean isUpdateDisabled() {
-    	return System.getProperty("update.disabled", "NO").toUpperCase().matches("YES|SIM|1");
-    }
-
-	private void handleSoftwareUpdate(Arguments arguments) {
-		if (isUpdateDisabled()) return;
-
-		final File csvFile = arguments.getCsvFile();
-		final String targetFolder = csvFile.getParent();
-		progressInfo.setTitle("Atualizator - " + appVersion);
-		final Version newVersion = SoftwareUpdate.update(appVersion, targetFolder, progressInfo);
-		progressInfo.setTitle("Apropriator - " + appVersion);
-		if (newVersion != null) {
-			final String jar = String.format("%s%salm-apropriator-%s.jar", targetFolder, File.separator, newVersion);
-			Exec.jar(jar, csvFile.getPath());
-			System.exit(0);
-		} else {
-			showReleaseNotes();
-			showWarnMessage();
-		}
-	}
-
-    private Apropriator() {
+    private Apropriator(String[] args) {
+        super(args, "ALM Apropriator");
     	appContext = new AppContext();
 
     	appVersion = new Version(getAppVersion());
@@ -306,6 +221,9 @@ public class Apropriator {
     }
 
     private boolean registrosApropriacoesIntegros() {
+        if (this.apropriationFile.isCaptureInfo()) {
+            return true;
+        }
         final Config config = getConfig();
         final int minimoMinutosApropriacaoDia = config.getMinimoMinutosApropriacaoDia();
         final int maximoMinutosApropriacaoDia = config.getMaximoMinutosApropriacaoDia();

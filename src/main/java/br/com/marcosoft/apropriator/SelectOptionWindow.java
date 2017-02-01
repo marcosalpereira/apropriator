@@ -23,8 +23,9 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 
-import br.com.marcosoft.apropriator.util.AWTUtilitiesWrapper;
-import br.com.marcosoft.apropriator.util.MoveMouseListener;
+import org.marcosoft.lib.AWTUtilitiesWrapper;
+import org.marcosoft.lib.MoveMouseListener;
+
 
 
 /**

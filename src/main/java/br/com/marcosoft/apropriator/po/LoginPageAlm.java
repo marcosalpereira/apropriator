@@ -19,7 +19,7 @@ public class LoginPageAlm extends PageObject {
             if (isDisplayed(By.id("jazz_app_internal_LoginWidget_0_userId"))) {
                 return true;
             }
-            sleep(1000);
+            sleep(500);
         }
         return false;
     }

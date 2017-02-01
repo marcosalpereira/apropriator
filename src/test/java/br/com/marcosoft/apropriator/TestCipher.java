@@ -3,8 +3,7 @@ package br.com.marcosoft.apropriator;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-
-import br.com.marcosoft.apropriator.util.Cipher;
+import org.marcosoft.lib.Cipher;
 
 public class TestCipher {
 

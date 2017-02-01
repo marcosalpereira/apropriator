@@ -1,36 +1,36 @@
 <html>
 
 <h2>
-ATEN√á√ÉO - Atualiza√ß√£o para adicionar um bot√£o para possibilitar a recupera√ß√£o do titulo de itens de trabalho</b></u>
+ATEN«√O - AtualizaÁ„o para adicionar um bot„o para possibilitar a recuperaÁ„o do titulo de itens de trabalho</b></u>
 </h2>
 
-<p>Para atualizar √© bem f√°cil:</p>
+<p>Para atualizar È bem f·cil:</p>
 <ol>
-	<li> Use a Op√ß√£o do Menu do BrOffice: Ferramentas -> Macros -> Organizar macros -> LibreOffice Basic</li>
-	<li> Na caixa de di√°logos "Macros do LibreOffice Basic": 
-	   No painel "Macro de" selecione o item da √°rvore "apropriacao.ods > Standard > Module1"
-	   Clique no bot√£o editar.</li>
-	<li> Substitua todo o conte√∫do mostrado no editor de macros pelo conte√∫do do arquivo
-		 "macro.oo.txt" que fica na mesma pasta da planilha de apropria√ß√£o.</li>
-	<li> pronto! </li>
+    <li> Use a OpÁ„o do Menu do BrOffice: Ferramentas -> Macros -> Organizar macros -> LibreOffice Basic</li>
+    <li> Na caixa de di·logos "Macros do LibreOffice Basic": 
+       No painel "Macro de" selecione o item da ·rvore "apropriacao.ods > Standard > Module1"
+       Clique no bot„o editar.</li>
+    <li> Substitua todo o conte˙do mostrado no editor de macros pelo conte˙do do arquivo
+         "macro.oo.txt" que fica na mesma pasta da planilha de apropriaÁ„o.</li>
+    <li> pronto! </li>
 </ol>
 
-<p>Para configurar um bot√£o na barra de ferramentas da planilha de apropria√ß√£o para 
-capturar o titulo do item de trabalho informado "Coment√°rio" fa√ßa:</p>
+<p>Para configurar um bot„o na barra de ferramentas da planilha de apropriaÁ„o para 
+capturar o titulo do item de trabalho informado "Coment·rio" faÁa:</p>
 <ol>
-	<li>Use a Op√ß√£o do Menu do BrOffice: Ferramentas -> Personalizar</li>
-	<li>Na aba de "Barra de Ferramentas" Selecione no campo "Barra de Ferramentas" selecione "Apropriator"</li>
-	<li>Use o bot√£o "Adicionar..."</li>
-	<li>No Dialogo "Adicionar Comandos" selecione na lista de categorias: "Macros do LibreOffice -> apropriacao.ods -> Standard -> Module1</li>
-	<li>Na lista "Comandos" selecione "CapturarTitulos" e clique no bot√£o adicionar. Se desejar pode customizar o nome do bot√£o como desejado</li>
-	<li>Use o bot√£o "OK"</li>
+    <li>Use a OpÁ„o do Menu do BrOffice: Ferramentas -> Personalizar</li>
+    <li>Na aba de "Barra de Ferramentas" Selecione no campo "Barra de Ferramentas" selecione "Apropriator"</li>
+    <li>Use o bot„o "Adicionar..."</li>
+    <li>No Dialogo "Adicionar Comandos" selecione na lista de categorias: "Macros do LibreOffice -> apropriacao.ods -> Standard -> Module1</li>
+    <li>Na lista "Comandos" selecione "CapturarTitulos" e clique no bot„o adicionar. Se desejar pode customizar o nome do bot„o como desejado</li>
+    <li>Use o bot„o "OK"</li>
 </ol>
 
-<p>Para usar o bot√£o rec√©m criado, digite numa c√©lula da coluna "Coment√°rio" algum texto da forma "?<id_item_trabalho>,...". Ex: "?123" ou "?123,?456" e use o bot√£o rec√©m criado
+<p>Para usar o bot„o recÈm criado, digite numa cÈlula da coluna "Coment·rio" algum texto da forma "?<id_item_trabalho>,...". Ex: "?123" ou "?123,?456" e use o bot„o recÈm criado
 para capturar os titulos dos itens</p>  
 <p>
-A recupera√ß√£o de titulos tamb√©m √© feita quando se faz a apropria√ß√£o. 
-<b>O bot√£o faz apenas a captura SEM fazer a apropria√ß√£o.</> 
+A recuperaÁ„o de titulos tambÈm È feita quando se faz a apropriaÁ„o. 
+<b>O bot„o faz apenas a captura SEM fazer a apropriaÁ„o.</> 
 </p>
 
 <p>Att Apropriator</p>

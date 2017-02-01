@@ -1,18 +1,18 @@
 <html>
 <p>
-<u><b>ATEN√á√ÉO</b></u>
+<u><b>ATEN«√O</b></u>
 </p>
 
-<p>Teve uma pequena altera√ß√£o no c√≥digo das macros.</p>
-<p>	Para atualizar √© bem f√°cil:</p>
+<p>Teve uma pequena alteraÁ„o no cÛdigo das macros.</p>
+<p> Para atualizar È bem f·cil:</p>
 <ol>
-	<li> Use a Op√ß√£o do Menu do BrOffice: Ferramentas -> Macros -> Organizar macros -> LibreOffice Basic</li>
-	<li> Na caixa de di√°logos "Macros do LibreOffice Basic": 
-	   No painel "Macro de" selecione o item da √°rvore "apropriacao.ods > Standard > Module1"
-	   Clique no bot√£o editar.</li>
-	<li> Substitua todo o conte√∫do mostrado no editor de macros pelo 
-         conte√∫do do arquivo "macro.oo.txt" que fica na mesma pasta da planilha de apropria√ß√£o.<li>
-	<li> pronto! </li>
+    <li> Use a OpÁ„o do Menu do BrOffice: Ferramentas -> Macros -> Organizar macros -> LibreOffice Basic</li>
+    <li> Na caixa de di·logos "Macros do LibreOffice Basic": 
+       No painel "Macro de" selecione o item da ·rvore "apropriacao.ods > Standard > Module1"
+       Clique no bot„o editar.</li>
+    <li> Substitua todo o conte˙do mostrado no editor de macros pelo 
+         conte˙do do arquivo "macro.oo.txt" que fica na mesma pasta da planilha de apropriaÁ„o.<li>
+    <li> pronto! </li>
 <ol/>   
 
 <p>Att Apropriator</p>

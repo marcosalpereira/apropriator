@@ -1,8 +1,9 @@
 package br.com.marcosoft.apropriator;
 
+import org.marcosoft.lib.ApplicationProperties;
+
 import br.com.marcosoft.apropriator.model.ApropriationFile;
 import br.com.marcosoft.apropriator.model.ApropriationFile.Config;
-import br.com.marcosoft.apropriator.util.ApplicationProperties;
 
 public class AppContext {
 	private ApropriationFile apropriationFile;

@@ -3,6 +3,7 @@ package br.com.marcosoft.apropriator.util;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.marcosoft.lib.WebUtils;
 
 public class URLUtilsTest {
 

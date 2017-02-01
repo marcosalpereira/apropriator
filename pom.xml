@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<name>alm-apropriator</name>
 
-	<version>2.9</version>
+	<version>2.10</version>
 
 	<build>
 		<plugins>
@@ -38,7 +38,10 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 						<manifestEntries>
-							<version>${project.version}</version>
+                            <Jar-Name>${project.artifactId}</Jar-Name>
+                            <App-Name>${project.name}</App-Name>
+                            <Update-Host>http://siscon.fla.serpro</Update-Host>
+                            <Update-Folder>.marcosalpereira</Update-Folder>
 						</manifestEntries>
 					</archive>
 				</configuration>
@@ -65,6 +68,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
+                            <encoding>ISO-8859-1</encoding>                     
 							<outputDirectory>${basedir}/dist/version-${project.version}</outputDirectory>
 							<resources>
 								<resource>
@@ -87,7 +91,7 @@
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
-				<filtering>true</filtering>				
+				<filtering>false</filtering>				
 			</resource>
 		</resources>
 
@@ -168,6 +172,12 @@
 			<artifactId>juniversalchardet</artifactId>
 			<version>1.0.3</version>
 		</dependency>
-
+		
+		<dependency>
+			<groupId>org.marcosoft</groupId>
+			<artifactId>commons</artifactId>
+			<version>0.1</version>
+		</dependency>
+		
 	</dependencies>
 </project>

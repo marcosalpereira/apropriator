@@ -19,7 +19,8 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 
-import br.com.marcosoft.apropriator.util.AWTUtilitiesWrapper;
+import org.marcosoft.lib.AWTUtilitiesWrapper;
+
 
 /**
  * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI

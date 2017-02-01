@@ -4,6 +4,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.marcosoft.lib.ApplicationProperties;
+import org.marcosoft.lib.Cipher;
+
 import br.com.marcosoft.apropriator.model.ApropriationFile;
 import br.com.marcosoft.apropriator.model.ApropriationFile.Config;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
@@ -12,8 +15,6 @@ import br.com.marcosoft.apropriator.po.LoginPageAlm;
 import br.com.marcosoft.apropriator.po.NotLoggedInException;
 import br.com.marcosoft.apropriator.po.RastreamentoHorasPage;
 import br.com.marcosoft.apropriator.po.VisaoGeralPage;
-import br.com.marcosoft.apropriator.util.ApplicationProperties;
-import br.com.marcosoft.apropriator.util.Cipher;
 
 public abstract class BaseSeleniumControler {
     private boolean lerSenhaSalva = true;

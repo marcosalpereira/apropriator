@@ -20,7 +20,7 @@ public class RastreamentoHorasPage extends PageObject {
             if (isOnRastreamentoHorasPage()) {
                 return;
             }
-            sleep(1000);
+            sleep(500);
         }
         throw new IllegalStateException("Não foi para a página de rastreamento de horas!");
     }

@@ -31,15 +31,15 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.marcosoft.lib.AWTUtilitiesWrapper;
+import org.marcosoft.lib.MoveMouseListener;
+import org.marcosoft.lib.Progress;
+
 import br.com.marcosoft.apropriator.model.DaySummary;
 import br.com.marcosoft.apropriator.model.ItemTrabalho;
 import br.com.marcosoft.apropriator.model.TaskSummary;
 import br.com.marcosoft.apropriator.model.TaskWeeklySummary;
-import br.com.marcosoft.apropriator.util.AWTUtilitiesWrapper;
-import br.com.marcosoft.apropriator.util.MoveMouseListener;
 import br.com.marcosoft.apropriator.util.Util;
-import br.com.marcosoft.apropriator.util.WebUtils.Progress;
-
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -445,6 +445,10 @@ public class ProgressInfo extends JFrame implements ActionListener, Progress {
     public void setProgress(String progress) {
     	lblMessage.setVisible(true);
     	lblMessage.setText(progress);
+    }
+
+    public void setProgress(String template, Object... args) {
+        progressBar.setString(String.format(template, args));
     }
 
     public void setProgress(int value) {

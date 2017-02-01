@@ -1,5 +1,8 @@
 package br.com.marcosoft.apropriator.po;
 
+import org.marcosoft.lib.Condition;
+import org.marcosoft.lib.WaitWindow;
+import org.marcosoft.lib.WebUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
@@ -7,11 +10,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
-import br.com.marcosoft.apropriator.Condition;
-import br.com.marcosoft.apropriator.WaitWindow;
 import br.com.marcosoft.apropriator.selenium.SeleniumSupport;
 import br.com.marcosoft.apropriator.util.Util;
-import br.com.marcosoft.apropriator.util.WebUtils;
 
 public class PageObject {
 
@@ -28,12 +28,12 @@ public class PageObject {
     }
 
     protected void type(By by, String value) {
-        final WebElement element = FindElement.findElement(by, FindElement.isEnabled());
+        final WebElement element = FindElement.waitForElement(by, FindElement.isEnabled());
         element.sendKeys(value);
     }
 
     protected void click(By by) {
-        final WebElement element = FindElement.findElement(by, FindElement.isEnabled());
+        final WebElement element = FindElement.waitForElement(by, FindElement.isEnabled());
         element.click();
     }
 
