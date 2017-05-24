@@ -100,7 +100,7 @@ public class ReadPasswordWindow extends JDialog {
             	jPanel1.setLayout(jPanel1Layout2);
             	{
             		btnConfirmar = new JButton();
-            		btnConfirmar.setDefaultCapable(true);
+            		getRootPane().setDefaultButton(btnConfirmar);
             		jPanel1.add(btnConfirmar);
             		btnConfirmar.setText("Confirmar");
             		btnConfirmar.addActionListener(new ActionListener() {
