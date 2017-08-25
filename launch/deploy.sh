@@ -50,4 +50,4 @@ mv binario.zip ${downloadDir}/v${version}
 echo "/.marcosalpereira/$app/releases/download/v${version}/binario.zip" > ${releasesDir}/$versionType
 
 cd ${workRoot}
-scp -r ./. root@siscon.fla.serpro:/var/www/html
+# scp -r ./. root@siscon.fla.serpro:/var/www/html

@@ -4,12 +4,12 @@
 '0.4 - ajustar informacoes no SGI
 '0.5 - usar maior versao do jar
 '0.6 - Limpar somente os dados ja registrados
-'0.7 - Informar se N√ÉO encontrar arquivo de retorno
+'0.7 - Informar se N√O encontrar arquivo de retorno
 '0.8 - exibir contador ao esperar por arquivo retorno
 '0.9 - capturar projetos
 '1.0 - ler arquivo retorno forcando encode UTF-8
 '1.1 - suportar ALM
-'1.2 - exportar atividades j√° apropriadas
+'1.2 - exportar atividades j· apropriadas
 '1.3 - Limpar ate a linha selecionada
 '1.4 - Coluna Semana
 '1.5 - Somente ALM
@@ -19,6 +19,7 @@
 '1.9 - Possibilidade recuperar titulos dos itens de trabalho; 
 '1.10 - fazer escape da url de abrir browser com item de trabalho
 '1.11 - Mostrar mensagems de erro durante as apropriacoes
+'1.12 - URL Encode quote Á
 
 Const VERSION = "1.11"
 
@@ -182,7 +183,7 @@ sub clean
     selectedRow = getSelectedRow()
     selectedCol = getSelectedCol()
     if (selectedRow > FIRST_ROW And selectedCol = COL_DATE) Then
-        if (msgbox("Limpar atividades j√° apropriadas at√© a linha " & selectedRow + 1, 1) = 2) Then
+        if (msgbox("Limpar atividades j· apropriadas atÈ a linha " & selectedRow + 1, 1) = 2) Then
            exit sub
         End if
     Else 
@@ -216,7 +217,7 @@ sub clean
 
       for col = 0 to COL_LAST
          if (col = COL_REG) Then
-            setText(col, row, "N√£o")
+            setText(col, row, "N„o")
          Elseif (isFormula(col, row)) Then
             'do nothing
          Else
@@ -225,7 +226,7 @@ sub clean
       Next col
     Next row
    
-    'Restaurar as n√£o apropriadas
+    'Restaurar as n„o apropriadas
     Dim qtdSalvas as Integer
     qtdSalvas = idxLinhasDados
     idxLinhasDados = 0
@@ -404,7 +405,7 @@ Sub execImportApp(exportedFile as String)
     script = sCurrDir & script
     
     If Not FileExists(script) Then 
-        MsgBox script + ". N√£o encontrado!!"
+        MsgBox script + ". N„o encontrado!!"
         Exit sub
     End if
     
@@ -437,36 +438,36 @@ Sub abrir()
     cellText = getText(curPos.column, curPos.row)
     
     if curPos.column = COL_WORK_ITEM Then
-    	sItems = Split(cellText, ";")(0)
+        sItems = Split(cellText, ";")(0)
     Elseif curPos.column = COL_COMENTARIO Then
-    	sItems = Split(cellText, "-")(0)
+        sItems = Split(cellText, "-")(0)
     Else 
-    	MsgBox "Selecione a Coluna de 'Item de Trabalho' ou 'Coment√°rio'"
-    	exit sub
+        MsgBox "Selecione a Coluna de 'Item de Trabalho' ou 'Coment·rio'"
+        exit sub
     End if
     aItems = Split(sItems, ",")
 
     Dim i as Integer
     For i = LBound(aItems) to UBound(aItems)
-		Dim item as String
-		item = aItems(i)
-		if (left(item, 1) = "?") Then
-			item = mid$(item, 2, Len(item))
-		End if
-		
-		if IsNumeric(item) Then
-			Dim url as String
-			url = montarUrl(getText(COL_CONTEXTO, curPos.row), item)
-			
-			Dim sys as Object
-		    sys = CreateUnoService("com.sun.star.system.SystemShellExecute")
-		    sys.execute(getBrowser(), url, 0)
-		End if
-	Next	
+        Dim item as String
+        item = aItems(i)
+        if (left(item, 1) = "?") Then
+            item = mid$(item, 2, Len(item))
+        End if
+        
+        if IsNumeric(item) Then
+            Dim url as String
+            url = montarUrl(getText(COL_CONTEXTO, curPos.row), item)
+            
+            Dim sys as Object
+            sys = CreateUnoService("com.sun.star.system.SystemShellExecute")
+            sys.execute(getBrowser(), url, 0)
+        End if
+    Next    
 End Sub
 
 Sub getBrowser() as String
-	getBrowser = "firefox"
+    getBrowser = "firefox"
 End Sub
 
 Sub montarUrl(ctx as String, id as String) as String
@@ -474,7 +475,11 @@ montarUrl = "https://alm.serpro/ccm/web/projects/" & webEncode(ctx) & "#action=c
 End Sub
 
 Sub webEncode(str as String) as String
-	webEncode = replace(str, " ", "%20")
+    Dim ret as String
+    ret = str
+    ret = replace(ret, " ", "%20")
+    ret = replace(ret, "Á", "%C7")
+    webEncode = ret
 End Sub
 
 Sub getJarFile(sCurrDir as String) as String
@@ -495,7 +500,7 @@ Sub getJarFile(sCurrDir as String) as String
     jar = Dir
   Wend
   if (latestJar = "") Then
-     msgbox "N√£o consegui encontrar algum alm-apropriator*.jar"
+     msgbox "N„o consegui encontrar algum alm-apropriator*.jar"
   End if
   getJarFile = sCurrDir & latestJar
 End Sub
@@ -510,10 +515,10 @@ Sub extractJarVersion(jar as String) as String
       version = mid$(jar, 17, len(jar) - 20)
       aVersion = Split(version, ".")      
       For i = 0 to UBound(aVersion)
-      	fmtVersion = fmtVersion + Format(aVersion(i), "00000")
+        fmtVersion = fmtVersion + Format(aVersion(i), "00000")
       Next   
-	End if
-	extractJarVersion = fmtVersion
+    End if
+    extractJarVersion = fmtVersion
 End Sub
 
 'Importar arquivo de retorno.
@@ -601,7 +606,7 @@ sub arquivoRetornoPresente(inputFileName as String) as boolean
         arquivoRetornoPresente = true
         exit sub
     Else 
-      if (MsgBox("Arquivo de retorno n√£o foi encontrado! Tenta novamente?", MB_YESNO) <> IDYES) Then
+      if (MsgBox("Arquivo de retorno n„o foi encontrado! Tenta novamente?", MB_YESNO) <> IDYES) Then
          arquivoRetornoPresente = false
          exit sub
      end if
