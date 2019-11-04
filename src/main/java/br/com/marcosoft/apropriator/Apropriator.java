@@ -84,7 +84,7 @@ public class Apropriator extends App {
 	}
 
     private Apropriator(String[] args) {
-        super(args, "ALM Apropriator");
+        super("alm-apropriator", args, "ALM Apropriator");
     	appContext = new AppContext();
 
     	appVersion = new Version(getAppVersion());
@@ -112,7 +112,7 @@ public class Apropriator extends App {
 			}
 		}
 		if (ret == null) {
-			ret = "?";
+			ret = "9.99";
 		}
 		return ret;
     }

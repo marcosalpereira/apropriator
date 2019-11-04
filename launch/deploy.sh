@@ -4,8 +4,8 @@ mavenExec=$1
 versionType=$2
 app=$3
 
-if [ "${versionType}" != "latest" ] && [ "${versionType}" != "beta" ]; then
-    echo "Versao tem que ser latest ou beta!"
+if [ "${versionType}" != "latest" ] && [ "${versionType}" != "beta" ] && [ "${versionType}" != "java7" ] && [ "${versionType}" != "java8" ]; then
+    echo "Versao tem que ser 'latest', 'java7', 'java8' ou 'beta'!"
     exit 1   
 fi
 
@@ -50,4 +50,4 @@ mv binario.zip ${downloadDir}/v${version}
 echo "/.marcosalpereira/$app/releases/download/v${version}/binario.zip" > ${releasesDir}/$versionType
 
 cd ${workRoot}
-# scp -r ./. root@siscon.fla.serpro:/var/www/html
+#scp -r ./. root@siscon.fla.serpro:/var/www/html

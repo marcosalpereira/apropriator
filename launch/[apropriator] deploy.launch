@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.ui.externaltools.ProgramLaunchConfigurationType">
+<stringAttribute key="org.eclipse.debug.core.ATTR_REFRESH_SCOPE" value="${workspace}"/>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
-<mapEntry key="JAVA_HOME" value="/home/54706424372/dev/java/jdk1.8.0_101"/>
+<mapEntry key="JAVA_HOME" value="/usr/lib/jvm/java-8-oracle"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:/AlmApropriator/launch/deploy.sh}"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${MAVEN_EXEC} latest alm-apropriator"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${MAVEN_EXEC} java7 alm-apropriator"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:/AlmApropriator/dist}"/>
 </launchConfiguration>

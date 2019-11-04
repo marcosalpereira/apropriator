@@ -4,9 +4,11 @@ import java.io.File;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.firefox.internal.ProfilesIni;
+import org.openqa.selenium.firefox.ProfilesIni;
 
 import br.com.marcosoft.apropriator.model.ApropriationFile.Config;
 
@@ -40,26 +42,50 @@ public class SeleniumSupport {
     }
 
     private static WebDriver getFirefoxDriver(Config config) {
+        setDriverLocation(config, "gecko");
         final ProfilesIni allProfiles = new ProfilesIni();
         final String profile = config.getFirefoxProfile();
         final FirefoxProfile firefoxProfile = allProfiles.getProfile(profile);
-        final WebDriver driver = new FirefoxDriver(firefoxProfile);
+        final FirefoxOptions options = new FirefoxOptions();
+        options.setProfile(firefoxProfile);
+        final String browserLocation = getBrowserLocation();
+        if (browserLocation != null) {
+            options.setBinary(browserLocation);
+        }
+        options.setCapability(org.openqa.selenium.firefox.FirefoxDriver.MARIONETTE, true);
+        
+        final WebDriver driver = new FirefoxDriver(options);
         return driver;
     }
 
     private static WebDriver getChromeDriver(Config config) {
-        final String key = "webdriver.chrome.driver";
-        if (System.getProperty(key) == null) {
+        setDriverLocation(config, "chrome");
+        final ChromeOptions options = new ChromeOptions();
+        final String browserLocation = getBrowserLocation();
+        if (browserLocation != null) {
+            options.setBinary(browserLocation);
+        }
+        final WebDriver driver = new ChromeDriver(options);
+        return driver;
+    }
+
+    private static String getBrowserLocation() {
+        return System.getProperty("browser.location");
+    }
+
+    private static void setDriverLocation(Config config, String driverName) {
+        final String propertyKey = String.format("webdriver.%s.driver", driverName);
+
+        if (System.getProperty(propertyKey) == null) {
             final String planilhaDir = config.getPlanilhaDir();
-            final String chromedriverPath = planilhaDir + File.separator + "chromedriver";
-            if (new File(chromedriverPath).canExecute()) {
-                System.setProperty(key, chromedriverPath);
+            final String driverPath = planilhaDir + File.separator + driverName + "driver";
+            if (new File(driverPath).canExecute()) {
+                System.setProperty(propertyKey, driverPath);
             } else {
-                System.setProperty(key, "/usr/bin/chromedriver");
+                final String driverPathDefault = String.format("/usr/bin/%sdriver", driverName);
+                System.setProperty(propertyKey, driverPathDefault);
             }
         }
-        final WebDriver driver = new ChromeDriver();
-        return driver;
     }
 
     public static  void stopSelenium() {
